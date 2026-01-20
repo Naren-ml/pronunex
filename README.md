@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="frontend/public/icon.png" alt="Pronunex Logo" width="512" height="512">
+  <img src="frontend/public/icon.png" alt="Pronunex Logo" width="100">
 </div>
 
 # Pronunex
