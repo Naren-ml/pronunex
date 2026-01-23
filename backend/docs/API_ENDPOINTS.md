@@ -10,7 +10,7 @@ Base URL: `http://localhost:8000/api/v1/`
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
-| POST | `/auth/signup/` | User registration | No |
+| POST | `/auth/register/` | User registration | No |
 | POST | `/auth/login/` | JWT login, returns access & refresh tokens | No |
 | POST | `/auth/logout/` | Blacklist refresh token | Yes |
 | POST | `/auth/token/refresh/` | Refresh access token | No |
