@@ -120,7 +120,12 @@ class AssessmentService:
             alignment_map = sentence.alignment_map
             
             # Step 3: Run forced alignment on user audio
-            user_timestamps = self._align_audio(cleaned_audio_path, expected_phonemes)
+            # Pass sentence text for word-boundary-based alignment
+            user_timestamps = self._align_audio(
+                cleaned_audio_path, 
+                expected_phonemes,
+                sentence_text=sentence.text
+            )
             
             # Step 4: Slice audio into phoneme segments
             audio_slices = self._slice_audio(cleaned_audio_path, user_timestamps)
@@ -195,10 +200,20 @@ class AssessmentService:
         from nlp_core.audio_cleaner import clean_audio
         return clean_audio(audio_file)
     
-    def _align_audio(self, audio_path, phonemes):
-        """Run forced alignment on audio."""
-        from nlp_core.aligner import get_phoneme_timestamps
-        return get_phoneme_timestamps(audio_path, phonemes)
+    def _align_audio(self, audio_path, phonemes, sentence_text=None):
+        """
+        Run forced alignment on audio.
+        
+        Uses the enhanced alignment with word boundaries when text is available.
+        """
+        from nlp_core.aligner import get_phoneme_timestamps, get_phoneme_timestamps_with_text
+        
+        if sentence_text:
+            # Use word-level alignment + G2P for better accuracy
+            return get_phoneme_timestamps_with_text(audio_path, sentence_text, phonemes)
+        else:
+            # Fallback to phoneme-only alignment
+            return get_phoneme_timestamps(audio_path, phonemes)
     
     def _slice_audio(self, audio_path, timestamps):
         """Slice audio into phoneme segments."""

@@ -166,18 +166,61 @@ class LLMService:
         return response.choices[0].message.content
     
     def _parse_json_response(self, content: str) -> dict:
-        """Parse JSON from LLM response."""
-        # Handle markdown code blocks
+        """
+        Parse JSON from LLM response.
+        
+        Handles various response formats:
+        - Pure JSON
+        - Markdown code blocks (```json or ```)
+        - JSON embedded in text
+        """
+        import re
+        
+        original_content = content
+        
+        # Try 1: Handle markdown code blocks
         if "```json" in content:
             content = content.split("```json")[1].split("```")[0]
         elif "```" in content:
-            content = content.split("```")[1].split("```")[0]
+            parts = content.split("```")
+            if len(parts) >= 2:
+                content = parts[1]
         
         try:
             return json.loads(content.strip())
         except json.JSONDecodeError:
-            logger.warning("Failed to parse JSON response, returning as text")
-            return {"raw_text": content}
+            pass
+        
+        # Try 2: Find JSON object in text using regex
+        json_pattern = r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}'
+        matches = re.findall(json_pattern, original_content)
+        
+        for match in matches:
+            try:
+                return json.loads(match)
+            except json.JSONDecodeError:
+                continue
+        
+        # Try 3: Find JSON with nested objects
+        start_idx = original_content.find('{')
+        if start_idx != -1:
+            # Find matching closing brace
+            brace_count = 0
+            for i, char in enumerate(original_content[start_idx:]):
+                if char == '{':
+                    brace_count += 1
+                elif char == '}':
+                    brace_count -= 1
+                    if brace_count == 0:
+                        json_str = original_content[start_idx:start_idx + i + 1]
+                        try:
+                            return json.loads(json_str)
+                        except json.JSONDecodeError:
+                            break
+        
+        # Fallback: Return structured text response
+        logger.warning("Failed to parse JSON response, returning as text")
+        return {"raw_text": original_content, "parse_error": True}
     
     def _log_usage(self, provider: str, prompt: str, response: str):
         """Log LLM usage for auditing."""
