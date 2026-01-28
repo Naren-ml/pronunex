@@ -191,11 +191,38 @@ export function Practice() {
     const sentences = sentencesData?.recommendations || (Array.isArray(sentencesData) ? sentencesData : []);
     const { mutate, isLoading: isAssessing } = useMutation();
 
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [assessment, setAssessment] = useState(null);
-    const [sessionId, setSessionId] = useState(null);
+    // Session storage keys for state persistence
+    const STORAGE_KEYS = {
+        currentIndex: 'practice_currentIndex',
+        sessionId: 'practice_sessionId',
+        assessment: 'practice_assessment',
+    };
 
-    // Recording state
+    // Load persisted state from sessionStorage
+    const getPersistedState = (key, defaultValue) => {
+        try {
+            const stored = sessionStorage.getItem(key);
+            if (stored !== null) {
+                return JSON.parse(stored);
+            }
+        } catch (e) {
+            console.warn(`Failed to load ${key} from storage:`, e);
+        }
+        return defaultValue;
+    };
+
+    // Initialize state with persisted values
+    const [currentIndex, setCurrentIndex] = useState(() =>
+        getPersistedState(STORAGE_KEYS.currentIndex, 0)
+    );
+    const [assessment, setAssessment] = useState(() =>
+        getPersistedState(STORAGE_KEYS.assessment, null)
+    );
+    const [sessionId, setSessionId] = useState(() =>
+        getPersistedState(STORAGE_KEYS.sessionId, null)
+    );
+
+    // Recording state (not persisted - audio blobs can't be stored)
     const [isRecording, setIsRecording] = useState(false);
     const [hasRecording, setHasRecording] = useState(false);
     const [audioBlob, setAudioBlob] = useState(null);
@@ -221,9 +248,34 @@ export function Practice() {
     const maxDuration = 30;
     const currentSentence = sentences?.[currentIndex];
 
-    // Create session on mount
+    // Persist state changes to sessionStorage
+    useEffect(() => {
+        sessionStorage.setItem(STORAGE_KEYS.currentIndex, JSON.stringify(currentIndex));
+    }, [currentIndex]);
+
+    useEffect(() => {
+        if (sessionId !== null) {
+            sessionStorage.setItem(STORAGE_KEYS.sessionId, JSON.stringify(sessionId));
+        }
+    }, [sessionId]);
+
+    useEffect(() => {
+        sessionStorage.setItem(STORAGE_KEYS.assessment, JSON.stringify(assessment));
+    }, [assessment]);
+
+    // Validate currentIndex against loaded sentences
+    useEffect(() => {
+        if (sentences?.length > 0 && currentIndex >= sentences.length) {
+            setCurrentIndex(0);
+        }
+    }, [sentences, currentIndex]);
+
+    // Create session on mount (only if no persisted session)
     useEffect(() => {
         const createSession = async () => {
+            // Skip if we already have a session from storage
+            if (sessionId) return;
+
             try {
                 const { data } = await api.post(ENDPOINTS.SESSIONS.CREATE, {});
                 setSessionId(data.id);
@@ -232,7 +284,7 @@ export function Practice() {
             }
         };
         createSession();
-    }, []);
+    }, [sessionId]);
 
     // Pre-generate TTS audio for sentences when loaded
     useEffect(() => {
@@ -405,6 +457,26 @@ export function Practice() {
         cancelRecording();
     };
 
+    // Reset entire session and start fresh
+    const handleStartFresh = async () => {
+        // Clear persisted state
+        Object.values(STORAGE_KEYS).forEach(key => sessionStorage.removeItem(key));
+
+        // Reset all state
+        setCurrentIndex(0);
+        setAssessment(null);
+        cancelRecording();
+
+        // Create new session
+        try {
+            const { data } = await api.post(ENDPOINTS.SESSIONS.CREATE, {});
+            setSessionId(data.id);
+            toast.success('Started new practice session!');
+        } catch (err) {
+            console.error('Failed to create new session:', err);
+        }
+    };
+
     // Play reference audio (TTS) - uses cached audio for instant playback
     const playReferenceAudio = async () => {
         if (!currentSentence) return;
@@ -539,6 +611,17 @@ export function Practice() {
                     </span>
                     {currentSentence?.difficulty_level && (
                         <DifficultyBadge level={currentSentence.difficulty_level} />
+                    )}
+                    {currentIndex > 0 && (
+                        <button
+                            type="button"
+                            className="practice__start-fresh-btn"
+                            onClick={handleStartFresh}
+                            title="Start fresh session"
+                        >
+                            <RotateCcw size={14} />
+                            <span>Start Fresh</span>
+                        </button>
                     )}
                 </div>
                 <div className="practice__progress-bar-container">
