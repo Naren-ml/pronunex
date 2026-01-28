@@ -19,7 +19,7 @@ import {
     ChevronDown,
     Settings
 } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useApi } from '../hooks/useApi';
 import { ENDPOINTS } from '../api/endpoints';
@@ -40,11 +40,31 @@ export function Navbar() {
     const dropdownRef = useRef(null);
 
     // Fetch user progress for streak
-    const { data: progress } = useApi(
+    const { data: progress, refetch: refetchProgress } = useApi(
         isAuthenticated ? ENDPOINTS.ANALYTICS.PROGRESS : null
     );
 
-    const streakDays = progress?.streak?.current_streak ?? progress?.streak_days ?? 0;
+    // Extract streak - handle multiple possible structures from API
+    const streakDays = useMemo(() => {
+        if (!progress) return 0;
+
+        // Try progress.streak.current_streak (serialized StreakRecord)
+        if (progress.streak?.current_streak !== undefined) {
+            return progress.streak.current_streak;
+        }
+
+        // Try progress.streak directly if it's a number
+        if (typeof progress.streak === 'number') {
+            return progress.streak;
+        }
+
+        // Fallback to streak_days field
+        if (progress.streak_days !== undefined) {
+            return progress.streak_days;
+        }
+
+        return 0;
+    }, [progress]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
