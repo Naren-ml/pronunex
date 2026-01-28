@@ -95,15 +95,13 @@ function App() {
                     }
                 />
 
-                {/* Landing page for unauthenticated users */}
+                {/* Landing page accessible to all users */}
                 <Route
                     path="/"
                     element={
-                        <PublicRoute>
-                            <Suspense fallback={<LoadingOverlay message="Loading..." />}>
-                                <LandingPage />
-                            </Suspense>
-                        </PublicRoute>
+                        <Suspense fallback={<LoadingOverlay message="Loading..." />}>
+                            <LandingPage />
+                        </Suspense>
                     }
                 />
 

@@ -100,7 +100,7 @@ export function Navbar() {
             <div className="navbar__container">
                 {/* Left Section - Branding */}
                 <div className="navbar__brand">
-                    <NavLink to={isAuthenticated ? "/dashboard" : "/"} className="navbar__logo" onClick={closeMobileMenu}>
+                    <NavLink to="/" className="navbar__logo" onClick={closeMobileMenu}>
                         <img
                             src="/icon.png"
                             alt="Pronunex"
