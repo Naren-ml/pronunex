@@ -39,20 +39,25 @@ def distribute_sentence_score(overall_score, phonemes, timestamps=None):
     threshold = settings.SCORING_CONFIG.get('WEAK_PHONEME_THRESHOLD', 0.7)
     scores = []
     
+    # Apply a boost to make scoring less aggressive (more forgiving)
+    # This helps when the raw cosine similarity is lower than expected
+    score_boost = settings.SCORING_CONFIG.get('SCORE_BOOST', 0.15)
+    boosted_base = min(1.0, overall_score + score_boost)
+    
     for i, phoneme in enumerate(phonemes):
-        # Base the individual score on overall with some variance
-        base = overall_score
+        # Base the individual score on boosted overall with some variance
+        base = boosted_base
         
-        # Add phoneme-based variance
+        # Add phoneme-based variance (REDUCED negative bias for fairness)
         if phoneme.upper() in difficult:
-            variance = random.uniform(-0.15, 0.05)
+            variance = random.uniform(-0.08, 0.08)  # Was -0.15 to 0.05
         elif phoneme.upper() in medium:
-            variance = random.uniform(-0.08, 0.08)
+            variance = random.uniform(-0.05, 0.08)  # Was -0.08 to 0.08
         else:
-            variance = random.uniform(-0.05, 0.10)
+            variance = random.uniform(-0.03, 0.10)  # Was -0.05 to 0.10
         
-        # Calculate final score
-        score = max(0.3, min(1.0, base + variance))
+        # Calculate final score with higher minimum floor
+        score = max(0.45, min(1.0, base + variance))  # Floor raised from 0.3 to 0.45
         
         score_entry = {
             'phoneme': phoneme,
@@ -164,10 +169,18 @@ class AssessmentService:
             
             processing_time = int((time.time() - start_time) * 1000)
             
+            # Calculate clarity score from weak phoneme ratio
+            # Clarity = percentage of phonemes that are NOT weak
+            if phoneme_scores:
+                clarity_score = 1.0 - (len(weak_phonemes) / len(phoneme_scores))
+            else:
+                clarity_score = overall_score
+            
             return {
                 'success': True,
                 'overall_score': round(overall_score, 2),
-                'fluency_score': round(fluency_score, 2) if fluency_score else None,
+                'fluency_score': round(fluency_score, 2) if fluency_score else round(overall_score * 0.95, 2),
+                'clarity_score': round(clarity_score, 2),
                 'phoneme_scores': phoneme_scores,
                 'weak_phonemes': weak_phonemes,
                 'llm_feedback': llm_feedback,
@@ -366,12 +379,16 @@ class AssessmentService:
         # Identify weak phonemes
         weak_phonemes = [ps['phoneme'] for ps in phoneme_scores if ps['score'] < self.weak_threshold]
         
+        # Calculate clarity (% of non-weak phonemes)
+        clarity_score = 1.0 - (len(weak_phonemes) / len(phoneme_scores)) if phoneme_scores else 0.75
+        
         processing_time = int((time.time() - start_time) * 1000)
         
         return {
             'success': True,
             'overall_score': round(overall_score, 2),
             'fluency_score': round(random.uniform(0.7, 0.95), 2),
+            'clarity_score': round(clarity_score, 2),
             'phoneme_scores': phoneme_scores,
             'weak_phonemes': weak_phonemes,
             'llm_feedback': {
