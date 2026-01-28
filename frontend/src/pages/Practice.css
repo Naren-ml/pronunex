@@ -264,6 +264,14 @@
     color: var(--text-secondary);
 }
 
+/* Mouth Diagrams */
+.practice__mouth-diagrams {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+}
+
 /* ============================================
    Right Column - The Action
    ============================================ */
@@ -736,4 +744,78 @@
     .practice__main {
         padding-bottom: 80px;
     }
+}
+
+/* ============================================
+   Insight Zone - Metrics & Recommendations
+   ============================================ */
+.practice__insight-zone {
+    padding: 0 var(--space-6) var(--space-4);
+    z-index: 1;
+    animation: slideInUp 0.4s ease-out;
+}
+
+@media (min-width: 1024px) {
+    .practice__insight-zone {
+        padding: 0 var(--space-8) var(--space-6);
+    }
+}
+
+.practice__metrics-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+    .practice__metrics-row {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1280px) {
+    .practice__metrics-row {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-5);
+    }
+}
+
+/* ============================================
+   Word Heatmap - Accessible Icons
+   ============================================ */
+.practice__heatmap-word {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.practice__heatmap-icon {
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.practice__heatmap-word--correct .practice__heatmap-icon {
+    color: var(--feedback-correct);
+}
+
+.practice__heatmap-word--needs-work .practice__heatmap-icon {
+    color: var(--feedback-close);
+}
+
+.practice__heatmap-word--incorrect .practice__heatmap-icon {
+    color: var(--feedback-incorrect);
+}
+
+/* ============================================
+   Glassmorphic Recorder Panel Enhancement
+   ============================================ */
+.practice__recorder-panel {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-subtle);
+}
+
+.practice__recorder-panel:hover {
+    box-shadow: var(--shadow-lg);
 }

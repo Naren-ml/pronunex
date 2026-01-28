@@ -1,0 +1,108 @@
+/* ConfidenceMeter Styles */
+
+.confidence-meter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-primary);
+    transition: all var(--transition-base);
+}
+
+.confidence-meter__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.confidence-meter__bar-container {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    min-width: 100px;
+}
+
+.confidence-meter__bar {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.1s ease-out, background-color var(--transition-base);
+}
+
+.confidence-meter__label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    white-space: nowrap;
+    min-width: 90px;
+    text-align: right;
+}
+
+/* Confidence States */
+.confidence-meter--quiet {
+    border-color: var(--color-neutral-300);
+}
+
+.confidence-meter--quiet .confidence-meter__icon {
+    color: var(--text-tertiary);
+}
+
+.confidence-meter--quiet .confidence-meter__bar {
+    background: var(--color-neutral-400);
+}
+
+.confidence-meter--quiet .confidence-meter__label {
+    color: var(--text-tertiary);
+}
+
+/* Low volume */
+.confidence-meter--low .confidence-meter__icon {
+    color: var(--feedback-close);
+}
+
+.confidence-meter--low .confidence-meter__bar {
+    background: var(--feedback-close);
+}
+
+.confidence-meter--low .confidence-meter__label {
+    color: var(--feedback-close);
+}
+
+/* Good volume */
+.confidence-meter--good {
+    border-color: var(--color-primary-200);
+    background: var(--color-primary-50);
+}
+
+.confidence-meter--good .confidence-meter__icon {
+    color: var(--color-primary-500);
+}
+
+.confidence-meter--good .confidence-meter__bar {
+    background: linear-gradient(90deg, var(--color-primary-400), var(--color-primary-500));
+}
+
+.confidence-meter--good .confidence-meter__label {
+    color: var(--color-primary-600);
+}
+
+/* Too loud */
+.confidence-meter--loud {
+    border-color: var(--feedback-incorrect);
+    background: var(--feedback-incorrect-bg);
+}
+
+.confidence-meter--loud .confidence-meter__icon {
+    color: var(--feedback-incorrect);
+}
+
+.confidence-meter--loud .confidence-meter__bar {
+    background: var(--feedback-incorrect);
+}
+
+.confidence-meter--loud .confidence-meter__label {
+    color: var(--feedback-incorrect);
+}

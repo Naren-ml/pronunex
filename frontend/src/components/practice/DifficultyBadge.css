@@ -1,0 +1,53 @@
+/* DifficultyBadge Styles */
+
+.difficulty-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    transition: all var(--transition-fast);
+}
+
+.difficulty-badge__icon {
+    flex-shrink: 0;
+}
+
+.difficulty-badge__label {
+    white-space: nowrap;
+}
+
+.difficulty-badge__description {
+    font-size: var(--text-xs);
+    opacity: 0.8;
+    margin-left: var(--space-1);
+}
+
+/* Beginner - Soft Emerald */
+.difficulty-badge--beginner {
+    background: var(--difficulty-beginner-bg);
+    color: var(--difficulty-beginner);
+    border: 1px solid var(--difficulty-beginner-border);
+}
+
+/* Intermediate - Ocean Teal */
+.difficulty-badge--intermediate {
+    background: var(--difficulty-intermediate-bg);
+    color: var(--difficulty-intermediate);
+    border: 1px solid var(--difficulty-intermediate-border);
+}
+
+/* Advanced - Amethyst Purple */
+.difficulty-badge--advanced {
+    background: var(--difficulty-advanced-bg);
+    color: var(--difficulty-advanced);
+    border: 1px solid var(--difficulty-advanced-border);
+}
+
+/* Hover states for interactive contexts */
+.difficulty-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}

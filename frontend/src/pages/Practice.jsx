@@ -1,6 +1,7 @@
 /**
- * Practice Page - Two-Column Split Layout
- * Premium EdTech design with waveform visualization and word heatmap
+ * Practice Page - Enterprise Bento Grid Layout
+ * Premium EdTech design with difficulty tiering, waveform visualization, 
+ * metric cards, and adaptive recommendations
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -16,7 +17,12 @@ import {
     Pause,
     RotateCcw,
     Send,
-    Volume2
+    Volume2,
+    Target,
+    Gauge,
+    BarChart3,
+    Check,
+    X
 } from 'lucide-react';
 import { useApi, useMutation } from '../hooks/useApi';
 import { useUI } from '../context/UIContext';
@@ -25,6 +31,7 @@ import { ENDPOINTS } from '../api/endpoints';
 import { Spinner } from '../components/Loader';
 import { ErrorState } from '../components/ErrorState';
 import { EmptyState } from '../components/EmptyState';
+import { DifficultyBadge, MetricCard, RecommendationCard, ConfidenceMeter } from '../components/practice';
 import './Practice.css';
 
 // Waveform Visualizer Component
@@ -107,7 +114,7 @@ function WaveformVisualizer({ isRecording, audioStream }) {
     );
 }
 
-// Word Heatmap Component
+// Word Heatmap Component - With accessibility icons
 function WordHeatmap({ sentence, phonemeScores }) {
     const words = sentence.split(/\s+/);
 
@@ -121,22 +128,25 @@ function WordHeatmap({ sentence, phonemeScores }) {
         return Math.max(0, Math.min(1, avgScore + variance));
     };
 
-    const getWordClass = (score) => {
-        if (score >= 0.8) return 'practice__heatmap-word--correct';
-        if (score >= 0.6) return 'practice__heatmap-word--needs-work';
-        return 'practice__heatmap-word--incorrect';
+    const getWordData = (score) => {
+        if (score >= 0.8) return { class: 'practice__heatmap-word--correct', icon: Check, label: 'Correct' };
+        if (score >= 0.6) return { class: 'practice__heatmap-word--needs-work', icon: AlertCircle, label: 'Close' };
+        return { class: 'practice__heatmap-word--incorrect', icon: X, label: 'Needs work' };
     };
 
     return (
         <div className="practice__word-heatmap">
             {words.map((word, idx) => {
                 const score = getWordScore(idx);
+                const wordData = getWordData(score);
+                const IconComponent = wordData.icon;
                 return (
                     <span
                         key={idx}
-                        className={`practice__heatmap-word ${getWordClass(score)}`}
-                        title={`Score: ${Math.round(score * 100)}%`}
+                        className={`practice__heatmap-word ${wordData.class}`}
+                        title={`${wordData.label}: ${Math.round(score * 100)}%`}
                     >
+                        <IconComponent size={14} className="practice__heatmap-icon" />
                         {word}
                     </span>
                 );
@@ -203,6 +213,10 @@ export function Practice() {
     const [isLoadingReference, setIsLoadingReference] = useState(false);
     const [isPlayingReference, setIsPlayingReference] = useState(false);
     const [cachedAudioUrl, setCachedAudioUrl] = useState(null);
+
+    // Shadowing Mode - 0.8x speed for simultaneous speaking
+    const [isShadowingMode, setIsShadowingMode] = useState(false);
+    const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
 
     const maxDuration = 30;
     const currentSentence = sentences?.[currentIndex];
@@ -408,6 +422,9 @@ export function Practice() {
             const audio = new Audio(cachedAudioUrl);
             referenceAudioRef.current = audio;
 
+            // Apply shadowing mode speed (0.8x for simultaneous speaking)
+            audio.playbackRate = isShadowingMode ? 0.8 : playbackSpeed;
+
             audio.onended = () => setIsPlayingReference(false);
             audio.onerror = () => {
                 toast.error('Failed to play audio');
@@ -513,13 +530,16 @@ export function Practice() {
 
     return (
         <div className="practice">
-            {/* Progress Header */}
+            {/* Progress Header with Difficulty Badge */}
             <header className="practice__progress-header">
                 <div className="practice__progress-info">
                     <h1 className="practice__title">Practice Session</h1>
                     <span className="practice__progress-text">
                         {currentIndex + 1} of {sentences.length}
                     </span>
+                    {currentSentence?.difficulty_level && (
+                        <DifficultyBadge level={currentSentence.difficulty_level} />
+                    )}
                 </div>
                 <div className="practice__progress-bar-container">
                     <div
@@ -604,6 +624,12 @@ export function Practice() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Confidence Meter - Real-time volume feedback */}
+                            <ConfidenceMeter
+                                audioStream={audioStream}
+                                isRecording={isRecording}
+                            />
 
                             {/* Playback audio element */}
                             {audioUrl && <audio ref={audioRef} src={audioUrl} />}
@@ -754,6 +780,48 @@ export function Practice() {
                     )}
                 </section>
             </main>
+
+            {/* Insight Zone - Metrics & Recommendations */}
+            {assessment && (
+                <section className="practice__insight-zone">
+                    <div className="practice__metrics-row">
+                        <MetricCard
+                            label="Accuracy"
+                            value={Math.round(assessment.overall_score * 100)}
+                            unit="%"
+                            icon={Target}
+                            trend={assessment.overall_score >= 0.7 ? 'up' : 'down'}
+                        />
+                        <MetricCard
+                            label="Fluency"
+                            value={assessment.fluency_score ? Math.round(assessment.fluency_score * 100) : '--'}
+                            unit={assessment.fluency_score ? '%' : ''}
+                            icon={Gauge}
+                            trend={assessment.fluency_score >= 0.7 ? 'up' : assessment.fluency_score >= 0.5 ? 'neutral' : 'down'}
+                        />
+                        <MetricCard
+                            label="Clarity"
+                            value={assessment.clarity_score ? Math.round(assessment.clarity_score * 100) : Math.round(assessment.overall_score * 100)}
+                            unit="%"
+                            icon={BarChart3}
+                            trend={assessment.clarity_score >= 0.7 ? 'up' : assessment.clarity_score >= 0.5 ? 'neutral' : 'down'}
+                        />
+                        <RecommendationCard
+                            weakPhonemes={assessment.weak_phonemes || []}
+                            overallScore={assessment.overall_score}
+                            onAction={(type) => {
+                                if (type === 'advance' && currentIndex < sentences.length - 1) {
+                                    handleNext();
+                                } else if (type === 'retry' || type === 'learn') {
+                                    handleTryAgain();
+                                } else if (type === 'practice') {
+                                    navigate('/phonemes');
+                                }
+                            }}
+                        />
+                    </div>
+                </section>
+            )}
 
             {/* Navigation */}
             <footer className="practice__nav">
