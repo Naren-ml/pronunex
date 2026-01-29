@@ -121,13 +121,13 @@ function Sparkline({ data = [], color = '#047857' }) {
 }
 
 // Weekly Progress Chart Component with Smooth Curves and Tooltips
-function WeeklyChart({ data = [] }) {
+function WeeklyChart({ data = [], labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] }) {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, day: '', score: 0 });
 
-    const chartData = data.length > 0 ? data : [65, 72, 68, 75, 80, 78, 85];
-    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const chartData = data.length > 0 ? data : [0, 0, 0, 0, 0, 0, 0];
+
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -348,7 +348,8 @@ export function Dashboard() {
         weak_phonemes: stats.current_weak_phonemes || [],
         weak_phonemes_count: stats.current_weak_phonemes?.length ?? stats.weak_phonemes_count ?? 0,
         daily_goal_progress: stats.daily_goal_progress || 60,
-        weekly_scores: stats.weekly_scores || [65, 72, 68, 75, 80, 78, 85],
+        weekly_scores: stats.weekly_scores || [0, 0, 0, 0, 0, 0, 0],
+        weekly_labels: stats.weekly_labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     };
 
     const hasNoActivity = normalizedStats.total_attempts === 0;
@@ -480,7 +481,7 @@ export function Dashboard() {
                             <h3 className="dashboard__chart-title">Weekly Progress</h3>
                             <span className="dashboard__chart-period">Last 7 days</span>
                         </div>
-                        <WeeklyChart data={normalizedStats.weekly_scores} />
+                        <WeeklyChart data={normalizedStats.weekly_scores} labels={normalizedStats.weekly_labels} />
                     </div>
 
                     {/* AI Insight */}
