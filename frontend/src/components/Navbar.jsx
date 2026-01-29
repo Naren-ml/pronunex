@@ -3,7 +3,7 @@
  * Full-width with streak counter, notifications, and enhanced active states
  */
 
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
     Home,
     Mic,
@@ -35,13 +35,15 @@ const NAV_ITEMS = [
 export function Navbar() {
     const { user, isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const dropdownRef = useRef(null);
 
-    // Fetch user progress for streak
+    // Fetch user progress for streak - refetch when location changes
     const { data: progress, refetch: refetchProgress } = useApi(
-        isAuthenticated ? ENDPOINTS.ANALYTICS.PROGRESS : null
+        isAuthenticated ? ENDPOINTS.ANALYTICS.PROGRESS : null,
+        { deps: [location.pathname] }
     );
 
     // Extract streak - handle multiple possible structures from API
