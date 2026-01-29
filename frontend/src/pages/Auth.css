@@ -225,3 +225,42 @@
     position: relative;
     padding-top: calc(var(--space-8) + var(--space-6));
 }
+
+/* Form Options (Forgot Password link) */
+.form-options {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: calc(-1 * var(--space-2));
+}
+
+.auth-link--sm {
+    font-size: var(--text-sm);
+}
+
+/* Success Icon */
+.auth-success-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-4);
+    color: var(--color-success-500);
+}
+
+.auth-success-icon svg {
+    animation: checkmark-pop 0.4s ease-out;
+}
+
+@keyframes checkmark-pop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

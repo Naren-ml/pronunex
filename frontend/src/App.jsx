@@ -14,6 +14,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 // Eager loaded pages (small, frequently used)
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import Phonemes from './pages/Phonemes';
 import Profile from './pages/Profile';
@@ -93,6 +94,10 @@ function App() {
                             <Signup />
                         </PublicRoute>
                     }
+                />
+                <Route
+                    path="/forgot-password"
+                    element={<ForgotPassword />}
                 />
 
                 {/* Landing page accessible to all users */}

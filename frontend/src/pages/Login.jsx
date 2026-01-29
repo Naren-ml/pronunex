@@ -142,6 +142,12 @@ export function Login() {
                         {errors.password && <span className="form-error">{errors.password}</span>}
                     </div>
 
+                    <div className="form-options">
+                        <Link to="/forgot-password" className="auth-link auth-link--sm">
+                            Forgot Password?
+                        </Link>
+                    </div>
+
                     <button
                         type="submit"
                         className="auth-submit btn btn--primary btn--lg w-full"
@@ -170,7 +176,7 @@ export function Login() {
                     </p>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 
