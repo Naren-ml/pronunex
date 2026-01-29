@@ -16,3 +16,5 @@ export { default as Footer } from './Footer';
 
 // Skeleton components
 export { default as SectionSkeleton } from './SectionSkeleton';
+export { default as Navbar } from './Navbar';
+// ... other exports
