@@ -106,3 +106,20 @@
 .confidence-meter--loud .confidence-meter__label {
     color: var(--feedback-incorrect);
 }
+
+/* ============================================
+   Dark Mode Overrides
+   ============================================ */
+[data-theme='dark'] .confidence-meter--good {
+    background: rgba(20, 184, 166, 0.1);
+    border-color: rgba(20, 184, 166, 0.3);
+}
+
+[data-theme='dark'] .confidence-meter--good .confidence-meter__label {
+    color: var(--color-primary-400);
+}
+
+[data-theme='dark'] .confidence-meter--loud {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+}

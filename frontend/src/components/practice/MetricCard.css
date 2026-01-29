@@ -105,3 +105,15 @@
 .metric-card__trend-value {
     white-space: nowrap;
 }
+
+/* ============================================
+   Dark Mode Overrides
+   ============================================ */
+[data-theme='dark'] .metric-card {
+    background: rgba(26, 26, 26, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .metric-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}

@@ -131,3 +131,11 @@
     background: var(--difficulty-intermediate-bg);
     color: var(--difficulty-intermediate);
 }
+
+/* ============================================
+   Dark Mode Overrides
+   ============================================ */
+[data-theme='dark'] .recommendation-card {
+    background: rgba(26, 26, 26, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+}

@@ -701,9 +701,29 @@ export function Dashboard() {
                 </aside>
 
 
+                {/* Bottom Section - 2x2 Grid */}
+                <section className="dashboard__bottom-section" style={{
+                    gridColumn: '1 / -1',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: '1.5rem',
+                    marginTop: '0.5rem'
+                }}>
+                    <SessionHistory />
+                    <QuickPractice />
+                    <PhonemeMastery />
+                    <LearningTips />
+                </section>
+
             </div>
         </div>
     );
 }
+
+// Lazy load bottom components to avoid circular deps if any
+import { SessionHistory } from '../components/dashboard/bottom/SessionHistory';
+import { QuickPractice } from '../components/dashboard/bottom/QuickPractice';
+import { PhonemeMastery } from '../components/dashboard/bottom/PhonemeMastery';
+import { LearningTips } from '../components/dashboard/bottom/LearningTips';
 
 export default Dashboard;

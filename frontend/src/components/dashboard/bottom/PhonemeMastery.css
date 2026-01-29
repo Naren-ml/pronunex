@@ -1,0 +1,101 @@
+.phoneme-mastery {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    padding: 1.5rem;
+    height: 100%;
+}
+
+.phoneme-mastery__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.phoneme-mastery__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.phoneme-mastery__legend {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.phoneme-mastery__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.phoneme-mastery__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.phoneme-mastery__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 0.75rem;
+}
+
+.phoneme-mastery__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-default);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.phoneme-mastery__item:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.phoneme-mastery__symbol {
+    font-family: monospace;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.phoneme-mastery__bar {
+    width: 100%;
+    height: 4px;
+    background: var(--bg-subtle);
+    border-radius: 2px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.phoneme-mastery__fill {
+    height: 100%;
+    border-radius: 2px;
+}
+
+/* Color utility classes for dynamic usage */
+.bg-success {
+    background-color: #10b981;
+}
+
+.bg-warning {
+    background-color: #f59e0b;
+}
+
+.bg-danger {
+    background-color: #ef4444;
+}

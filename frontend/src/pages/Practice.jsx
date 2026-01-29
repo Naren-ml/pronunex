@@ -32,6 +32,9 @@ import { Spinner } from '../components/Loader';
 import { ErrorState } from '../components/ErrorState';
 import { EmptyState } from '../components/EmptyState';
 import { DifficultyBadge, MetricCard, RecommendationCard, ConfidenceMeter } from '../components/practice';
+import { InsightsPanel } from '../components/practice/insights/InsightsPanel';
+import { ComparisonVisualizer } from '../components/practice/insights/ComparisonVisualizer';
+import { AIRecommendations } from '../components/practice/insights/AIRecommendations';
 import './Practice.css';
 
 // Waveform Visualizer Component
@@ -908,8 +911,23 @@ export function Practice() {
                             }}
                         />
                     </div>
+
+                    {/* Advanced Insights - Collapsible Panel */}
+                    <InsightsPanel isOpen={true} title="Advanced Insights & AI Feedback">
+                        <div className="insights-grid">
+                            <AIRecommendations
+                                assessment={assessment}
+                                currentSentence={currentSentence}
+                            />
+                            <ComparisonVisualizer
+                                userAudioUrl={audioUrl}
+                                referenceAudioUrl={cachedAudioUrl}
+                            />
+                        </div>
+                    </InsightsPanel>
                 </section>
             )}
+
 
             {/* Navigation */}
             <footer className="practice__nav">
