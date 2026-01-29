@@ -146,3 +146,21 @@
         gap: var(--space-2);
     }
 }
+
+/* ============================================
+   Dark Mode Overrides
+   ============================================ */
+[data-theme='dark'] .session-history__score--excellent {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+
+[data-theme='dark'] .session-history__score--good {
+    background: rgba(20, 184, 166, 0.15);
+    color: #5eead4;
+}
+
+[data-theme='dark'] .session-history__score--needs-work {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}

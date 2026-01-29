@@ -914,3 +914,21 @@
 .practice__recorder-panel:hover {
     box-shadow: var(--shadow-lg);
 }
+
+/* Dark mode recorder panel */
+[data-theme='dark'] .practice__recorder-panel {
+    background: rgba(26, 26, 26, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .practice__waveform-container {
+    background: #1a1a1a;
+}
+
+[data-theme='dark'] .practice__recording-indicator {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+[data-theme='dark'] .practice__recording-text {
+    color: #f87171;
+}

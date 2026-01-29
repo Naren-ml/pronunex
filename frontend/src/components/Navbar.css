@@ -14,6 +14,12 @@
     box-shadow: var(--shadow-enterprise);
 }
 
+/* Dark mode navbar */
+[data-theme='dark'] .navbar {
+    background: rgba(19, 19, 19, 0.85);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .navbar__container {
     display: flex;
     align-items: center;
@@ -223,6 +229,19 @@
 .navbar__streak--active .navbar__streak-icon {
     color: var(--color-warning-500);
     animation: flicker 1.5s ease-in-out infinite;
+}
+
+/* Dark mode streak */
+[data-theme='dark'] .navbar__streak {
+    background: rgba(45, 45, 45, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-neutral-300);
+}
+
+[data-theme='dark'] .navbar__streak--active {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fbbf24;
 }
 
 @keyframes flicker {

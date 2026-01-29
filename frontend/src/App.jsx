@@ -19,6 +19,7 @@ import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Phonemes from './pages/Phonemes';
 import Profile from './pages/Profile';
+import SettingsPage from './pages/SettingsPage';
 
 // Lazy loaded pages (heavy components)
 const Practice = lazy(() => import('./pages/Practice'));
@@ -166,6 +167,16 @@ function App() {
                         <ProtectedRoute>
                             <MainLayout>
                                 <Profile />
+                            </MainLayout>
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/settings"
+                    element={
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <SettingsPage />
                             </MainLayout>
                         </ProtectedRoute>
                     }

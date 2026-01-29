@@ -480,7 +480,7 @@ export function Dashboard() {
         streak_days: stats.streak?.current_streak ?? stats.streak_days ?? 0,
         weak_phonemes: stats.current_weak_phonemes || [],
         weak_phonemes_count: stats.current_weak_phonemes?.length ?? stats.weak_phonemes_count ?? 0,
-        daily_goal_progress: stats.daily_goal_progress || 60,
+        daily_goal_progress: stats.daily_goal_progress || 0,
         weekly_scores: stats.weekly_scores || [0, 0, 0, 0, 0, 0, 0],
         weekly_labels: stats.weekly_labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     };

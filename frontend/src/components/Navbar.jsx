@@ -186,14 +186,14 @@ export function Navbar() {
                                             <span>My Profile</span>
                                         </NavLink>
 
-                                        <button
-                                            type="button"
+                                        <NavLink
+                                            to="/settings"
                                             className="navbar__dropdown-item"
                                             onClick={() => setIsUserMenuOpen(false)}
                                         >
                                             <Settings size={16} />
                                             <span>Settings</span>
-                                        </button>
+                                        </NavLink>
 
                                         {user?.is_staff && (
                                             <NavLink
