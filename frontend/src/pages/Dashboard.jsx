@@ -3,7 +3,7 @@
  * Full viewport adaptive with profile, stats, and charts
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     Mic,
@@ -16,7 +16,8 @@ import {
     Sparkles,
     Trophy,
     Star,
-    Zap
+    Zap,
+    CheckCircle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useApi } from '../hooks/useApi';
@@ -24,6 +25,7 @@ import { ENDPOINTS } from '../api/endpoints';
 import { Spinner } from '../components/Loader';
 import { ErrorState } from '../components/ErrorState';
 import './Dashboard.css';
+import '../components/progress/MilestonesBadges.css'; // Import badge styles
 
 // Progress Ring Component
 function ProgressRing({ progress, size = 100, strokeWidth = 10 }) {
@@ -309,12 +311,143 @@ function WeeklyChart({ data = [], labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', '
     );
 }
 
+// Milestone definitions with icons and thresholds
+const MILESTONE_DEFINITIONS = [
+    {
+        id: 'first_practice',
+        name: 'First Steps',
+        description: 'Complete your first practice session',
+        icon: Star,
+        threshold: 1,
+        field: 'total_attempts',
+        color: '#f59e0b'
+    },
+    {
+        id: 'streak_7',
+        name: 'Week Warrior',
+        description: 'Achieve a 7-day practice streak',
+        icon: Flame,
+        threshold: 7,
+        field: 'current_streak',
+        color: '#ef4444'
+    },
+    {
+        id: 'attempts_50',
+        name: 'Dedicated Learner',
+        description: 'Complete 50 practice attempts',
+        icon: Target,
+        threshold: 50,
+        field: 'total_attempts',
+        color: '#10b981'
+    },
+    {
+        id: 'attempts_100',
+        name: 'Century Club',
+        description: 'Complete 100 practice attempts',
+        icon: Trophy,
+        threshold: 100,
+        field: 'total_attempts',
+        color: '#14b8a6'
+    },
+];
+
+function MilestoneBadge({ milestone, progress, isEarned, isNew }) {
+    const Icon = milestone.icon;
+    const progressPercent = Math.min((progress / milestone.threshold) * 100, 100);
+
+    return (
+        <div
+            className={`milestone-badge ${isEarned ? 'milestone-badge--earned' : ''} ${isNew ? 'milestone-badge--new' : ''}`}
+            title={milestone.description}
+        >
+            <div
+                className="milestone-badge__icon-wrapper"
+                style={{
+                    '--milestone-color': milestone.color,
+                    '--progress-percent': `${progressPercent}%`
+                }}
+            >
+                <Icon
+                    size={24}
+                    className="milestone-badge__icon"
+                    aria-hidden="true"
+                />
+                {isEarned && (
+                    <CheckCircle
+                        size={12}
+                        className="milestone-badge__check"
+                        aria-hidden="true"
+                    />
+                )}
+                {!isEarned && (
+                    <svg className="milestone-badge__progress-ring" viewBox="0 0 36 36">
+                        <path
+                            className="milestone-badge__progress-bg"
+                            d="M18 2.0845
+                               a 15.9155 15.9155 0 0 1 0 31.831
+                               a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                        <path
+                            className="milestone-badge__progress-fill"
+                            strokeDasharray={`${progressPercent}, 100`}
+                            d="M18 2.0845
+                               a 15.9155 15.9155 0 0 1 0 31.831
+                               a 15.9155 15.9155 0 0 1 0 -31.831"
+                        />
+                    </svg>
+                )}
+            </div>
+            <span className="milestone-badge__name">{milestone.name}</span>
+            {!isEarned && (
+                <span className="milestone-badge__progress-text">
+                    {Math.round(progress)}/{milestone.threshold}
+                </span>
+            )}
+        </div>
+    );
+}
+
+
 
 
 export function Dashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { data: progress, isLoading, error, refetch } = useApi(ENDPOINTS.ANALYTICS.PROGRESS);
+
+    // Calculate milestones directly from progress data
+    const milestones = useMemo(() => {
+        const stats = progress || {};
+        return MILESTONE_DEFINITIONS.map(milestone => {
+            let currentValue = 0;
+
+            switch (milestone.field) {
+                case 'total_attempts':
+                    currentValue = stats.attempt_stats?.total_attempts || stats.total_attempts || 0;
+                    break;
+                case 'current_streak':
+                    currentValue = stats.streak?.current_streak || 0;
+                    break;
+                case 'overall_average_score':
+                    currentValue = stats.attempt_stats?.avg_score || stats.overall_average_score || 0;
+                    break;
+                case 'mastered_phonemes_count':
+                    currentValue = stats.current_strong_phonemes?.length || 0;
+                    break;
+                default:
+                    currentValue = 0;
+            }
+
+            const isEarned = currentValue >= milestone.threshold;
+
+            return {
+                ...milestone,
+                progress: currentValue,
+                isEarned,
+                isNew: false
+            };
+        });
+    }, [progress]);
 
     if (isLoading) {
         return (
@@ -409,19 +542,20 @@ export function Dashboard() {
                     {/* Achievements */}
                     <div className="dashboard__achievements">
                         <h3 className="dashboard__section-title">Recent Badges</h3>
-                        <div className="dashboard__badges">
-                            <div className="dashboard__badge dashboard__badge--earned" title="First Practice">
-                                <span className="dashboard__badge-icon">🎯</span>
-                            </div>
-                            <div className="dashboard__badge dashboard__badge--earned" title="3-Day Streak">
-                                <span className="dashboard__badge-icon">🔥</span>
-                            </div>
-                            <div className="dashboard__badge" title="Week Warrior (Locked)">
-                                <span className="dashboard__badge-icon">🏆</span>
-                            </div>
-                            <div className="dashboard__badge" title="Perfect Score (Locked)">
-                                <span className="dashboard__badge-icon">⭐</span>
-                            </div>
+                        <div className="dashboard__badges" style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+                            gap: '1rem',
+                            marginTop: '0.5rem'
+                        }}>
+                            {milestones.map(milestone => (
+                                <MilestoneBadge
+                                    key={milestone.id}
+                                    milestone={milestone}
+                                    progress={milestone.progress}
+                                    isEarned={milestone.isEarned}
+                                />
+                            ))}
                         </div>
                     </div>
                 </aside>

@@ -84,7 +84,7 @@ function Sparkline({ data = [], color = '#14b8a6', height = 36 }) {
         }
 
         ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 5;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.stroke();
