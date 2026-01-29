@@ -15,6 +15,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Phonemes from './pages/Phonemes';
 import Profile from './pages/Profile';
@@ -98,6 +99,10 @@ function App() {
                 <Route
                     path="/forgot-password"
                     element={<ForgotPassword />}
+                />
+                <Route
+                    path="/reset-password"
+                    element={<ResetPassword />}
                 />
 
                 {/* Landing page accessible to all users */}

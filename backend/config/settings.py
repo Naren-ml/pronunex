@@ -181,19 +181,24 @@ SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SECURE = not DEBUG
 
-# CORS Configuration
-CORS_ALLOW_ALL_ORIGINS = DEBUG
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-]
-
 # Supabase Storage Configuration
 USE_SUPABASE_STORAGE = USE_SUPABASE  # Alias for backward compatibility
 SUPABASE_URL = os.getenv('SUPABASE_URL', '')
 SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', '')
 SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
 SUPABASE_STORAGE_BUCKET = os.getenv('SUPABASE_STORAGE_BUCKET', 'pronunex-dB')
+
+# Frontend Configuration
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+]
 
 # LLM API Configuration
 GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
