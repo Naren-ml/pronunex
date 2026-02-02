@@ -99,12 +99,17 @@ class AssessmentService:
         """
         Process a user's pronunciation attempt.
         
+        UPDATED: Now includes:
+        1. ASR Gatekeeper - Rejects wrong speech before scoring
+        2. Tensor Slicing - Uses contextual embeddings (not audio slicing)
+        3. Mistake Detection - Pinpoints exactly WHERE user made errors
+        
         Args:
             audio_file: Uploaded audio file
             sentence: ReferenceSentence instance
         
         Returns:
-            dict: Assessment results with scores and feedback
+            dict: Assessment results with scores, mistakes, and feedback
         """
         start_time = time.time()
         
@@ -119,24 +124,40 @@ class AssessmentService:
             # Step 1: Clean and preprocess audio
             cleaned_audio_path = self._clean_audio(audio_file)
             
-            # Step 2: Fetch precomputed phoneme sequence from DB
-            # (NOT regenerated - design requirement)
+            # Step 2: ASR GATEKEEPER - Verify what user actually said
+            # This prevents the "Yes Man" bug where wrong speech gets valid scores
+            from nlp_core.asr_validator import validate_speech
+            asr_result = validate_speech(cleaned_audio_path, sentence.text)
+            
+            # REJECT completely wrong speech (similarity too low)
+            if not asr_result.get('can_proceed', False):
+                processing_time = int((time.time() - start_time) * 1000)
+                return {
+                    'success': False,
+                    'error': 'content_mismatch',
+                    'message': asr_result.get('message', "Please say the correct sentence."),
+                    'transcribed': asr_result.get('transcribed', ''),
+                    'expected': sentence.text,
+                    'similarity': asr_result.get('similarity', 0.0),
+                    'suggestion': 'Please try again and say the exact sentence shown.',
+                    'processing_time_ms': processing_time,
+                }
+            
+            # Step 3: Fetch precomputed phoneme sequence from DB
             expected_phonemes = sentence.phoneme_sequence
             alignment_map = sentence.alignment_map
             
-            # Step 3: Run forced alignment on user audio
-            # Pass sentence text for word-boundary-based alignment
+            # Step 4: Run forced alignment on user audio
             user_timestamps = self._align_audio(
                 cleaned_audio_path, 
                 expected_phonemes,
                 sentence_text=sentence.text
             )
             
-            # Step 4: Slice audio into phoneme segments
-            audio_slices = self._slice_audio(cleaned_audio_path, user_timestamps)
-            
-            # Step 5: Generate embeddings for each slice
-            user_embeddings = self._generate_embeddings(audio_slices)
+            # Step 5: CONTEXTUAL EMBEDDINGS (tensor slicing, not audio slicing!)
+            # This fixes the "Context-Blind" bug
+            from nlp_core.vectorizer import compute_phoneme_embeddings
+            user_embeddings = compute_phoneme_embeddings(cleaned_audio_path, user_timestamps)
             
             # Step 6: Fetch precomputed reference embeddings (cached)
             reference_embeddings = self._get_reference_embeddings(sentence)
@@ -149,17 +170,38 @@ class AssessmentService:
                 user_timestamps
             )
             
-            # Step 8: Identify weak phonemes
+            # Handle unscorable result (honest failure, no fake scores)
+            if isinstance(phoneme_scores, dict) and phoneme_scores.get('status') == 'unscorable':
+                processing_time = int((time.time() - start_time) * 1000)
+                return {
+                    'success': False,
+                    'error': 'unscorable',
+                    'message': phoneme_scores.get('message', 'Could not score this attempt.'),
+                    'reason': phoneme_scores.get('reason', 'unknown'),
+                    'suggestion': phoneme_scores.get('suggestion', 'Please try again.'),
+                    'transcribed': asr_result.get('transcribed', ''),
+                    'processing_time_ms': processing_time,
+                }
+            
+            # Step 8: MISTAKE DETECTION - Pinpoint exactly where user made errors
+            from nlp_core.mistake_detector import detect_mistakes
+            mistake_report = detect_mistakes(
+                asr_result=asr_result,
+                phoneme_scores=phoneme_scores,
+                expected_text=sentence.text
+            )
+            
+            # Step 9: Identify weak phonemes for backward compatibility
             weak_phonemes = [
                 ps['phoneme'] for ps in phoneme_scores 
-                if ps['score'] < self.weak_threshold
+                if ps.get('is_weak', False)
             ]
             
-            # Step 9: Calculate overall and fluency scores
+            # Step 10: Calculate overall and fluency scores
             overall_score = self._calculate_overall_score(phoneme_scores)
             fluency_score = self._calculate_fluency_score(user_timestamps, alignment_map)
             
-            # Step 10: Generate LLM feedback (text only)
+            # Step 11: Generate LLM feedback (text only)
             llm_feedback = self._generate_feedback(
                 phoneme_scores=phoneme_scores,
                 weak_phonemes=weak_phonemes,
@@ -170,7 +212,6 @@ class AssessmentService:
             processing_time = int((time.time() - start_time) * 1000)
             
             # Calculate clarity score from weak phoneme ratio
-            # Clarity = percentage of phonemes that are NOT weak
             if phoneme_scores:
                 clarity_score = 1.0 - (len(weak_phonemes) / len(phoneme_scores))
             else:
@@ -183,6 +224,17 @@ class AssessmentService:
                 'clarity_score': round(clarity_score, 2),
                 'phoneme_scores': phoneme_scores,
                 'weak_phonemes': weak_phonemes,
+                
+                # NEW: ASR transcription info
+                'transcribed': asr_result.get('transcribed', ''),
+                'text_similarity': asr_result.get('similarity', 1.0),
+                
+                # NEW: Mistake detection with detailed feedback
+                'mistakes': mistake_report,
+                'word_errors': mistake_report.get('word_errors', 0),
+                'phoneme_errors': mistake_report.get('phoneme_errors', 0),
+                'mistake_feedback': mistake_report.get('feedback', {}),
+                
                 'llm_feedback': llm_feedback,
                 'processing_time_ms': processing_time,
                 'cleaned_audio_path': cleaned_audio_path,
