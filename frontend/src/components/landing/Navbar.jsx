@@ -8,9 +8,10 @@ export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // Hardcoded links to ensure they render
+    // UPDATED: Added 'Pricing' to the navigation links
     const navLinks = [
         { name: 'About Us', href: '/about' },
+        { name: 'Pricing', href: '/pricing' }, // <--- New Link Added Here
         { name: 'Docs', href: '/docs' },
         { name: 'Features', href: '/#features' },
         { name: 'How It Works', href: '/#how-it-works' },
@@ -32,9 +33,8 @@ export default function Navbar() {
                     <span className="navbar-logo-text">Pronunex</span>
                 </Link>
 
-                {/* 2. CENTER LINKS (The missing part) */}
+                {/* 2. CENTER LINKS */}
                 <div className="navbar-desktop-links" style={{ display: 'flex', gap: '2rem' }}> 
-                    {/* Added inline style to FORCE visibility */}
                     {navLinks.map((link) => (
                         <Link 
                             key={link.name} 

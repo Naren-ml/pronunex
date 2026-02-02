@@ -19,9 +19,11 @@ import Dashboard from './pages/Dashboard';
 import Phonemes from './pages/Phonemes';
 import Profile from './pages/Profile';
 
-// Import your NEW pages correctly
+// Import your NEW pages
 import AboutUs from './pages/AboutUs';
 import Docs from './pages/Docs';
+import Pricing from './pages/Pricing';
+import Contact from './pages/Contact';
 import Navbar from './components/landing/Navbar';
 
 // Lazy loaded pages
@@ -60,12 +62,13 @@ function App() {
         <ErrorBoundary>
             <ToastContainer />
             <Routes>
-<<<<<<< HEAD
-                {/* Auth Routes */}
+                {/* --- AUTH ROUTES --- */}
                 <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
                 <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
 
-                {/* Landing Page */}
+                {/* --- LANDING PAGE --- */}
                 <Route
                     path="/"
                     element={
@@ -76,46 +79,10 @@ function App() {
                                 </MainLayout>
                             </Suspense>
                         </PublicRoute>
-=======
-                {/* Public routes */}
-                <Route
-                    path="/login"
-                    element={
-                        <PublicRoute>
-                            <Login />
-                        </PublicRoute>
-                    }
-                />
-                <Route
-                    path="/signup"
-                    element={
-                        <PublicRoute>
-                            <Signup />
-                        </PublicRoute>
-                    }
-                />
-                <Route
-                    path="/forgot-password"
-                    element={<ForgotPassword />}
-                />
-                <Route
-                    path="/reset-password"
-                    element={<ResetPassword />}
-                />
-
-                {/* Landing page accessible to all users */}
-                <Route
-                    path="/"
-                    element={
-                        <Suspense fallback={<LoadingOverlay message="Loading..." />}>
-                            <LandingPage />
-                        </Suspense>
->>>>>>> ba9fcc0ca181ceb55aff5404450842872885f5f9
                     }
                 />
 
-                {/* --- CORRECTED INFO ROUTES --- */}
-                {/* These now point to your real components, not the placeholder divs */}
+                {/* --- PUBLIC INFO PAGES --- */}
                 <Route 
                     path="/about" 
                     element={
@@ -132,13 +99,31 @@ function App() {
                         </MainLayout>
                     } 
                 />
+                <Route 
+                    path="/pricing" 
+                    element={
+                        <MainLayout>
+                            <Pricing />
+                        </MainLayout>
+                    } 
+                />
+                <Route 
+                    path="/contact" 
+                    element={
+                        <MainLayout>
+                            <Contact />
+                        </MainLayout>
+                    } 
+                />
 
-                {/* Protected routes */}
+                {/* --- PROTECTED ROUTES --- */}
                 <Route path="/dashboard" element={<ProtectedRoute><MainLayout><Dashboard /></MainLayout></ProtectedRoute>} />
-                <Route path="/practice" element={<ProtectedRoute><MainLayout><Suspense fallback={<LoadingOverlay />}><Practice /></Suspense></MainLayout></ProtectedRoute>} />
-                <Route path="/progress" element={<ProtectedRoute><MainLayout><Suspense fallback={<LoadingOverlay />}><Progress /></Suspense></MainLayout></ProtectedRoute>} />
                 <Route path="/phonemes" element={<ProtectedRoute><MainLayout><Phonemes /></MainLayout></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
+                
+                {/* Lazy Loaded Protected Routes */}
+                <Route path="/practice" element={<ProtectedRoute><MainLayout><Suspense fallback={<LoadingOverlay />}><Practice /></Suspense></MainLayout></ProtectedRoute>} />
+                <Route path="/progress" element={<ProtectedRoute><MainLayout><Suspense fallback={<LoadingOverlay />}><Progress /></Suspense></MainLayout></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute><MainLayout><Suspense fallback={<LoadingOverlay />}><AdminProfile /></Suspense></MainLayout></ProtectedRoute>} />
 
                 {/* Catch-all redirect */}
