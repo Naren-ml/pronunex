@@ -25,6 +25,7 @@ import Docs from './pages/Docs';
 import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
 import Navbar from './components/landing/Navbar';
+import Features from './pages/Features';
 
 // Lazy loaded pages
 const Practice = lazy(() => import('./pages/Practice'));
@@ -83,44 +84,52 @@ function App() {
                 />
 
                 {/* --- PUBLIC INFO PAGES --- */}
-                <Route 
-                    path="/about" 
+                <Route
+                    path="/about"
                     element={
                         <MainLayout>
                             <AboutUs />
                         </MainLayout>
-                    } 
+                    }
                 />
-                <Route 
-                    path="/docs" 
+                <Route
+                    path="/docs"
                     element={
                         <MainLayout>
                             <Docs />
                         </MainLayout>
-                    } 
+                    }
                 />
-                <Route 
-                    path="/pricing" 
+                <Route
+                    path="/pricing"
                     element={
                         <MainLayout>
                             <Pricing />
                         </MainLayout>
-                    } 
+                    }
                 />
-                <Route 
-                    path="/contact" 
+                <Route
+                    path="/contact"
                     element={
                         <MainLayout>
                             <Contact />
                         </MainLayout>
-                    } 
+                    }
+                />
+                <Route
+                    path="/features"
+                    element={
+                        <MainLayout>
+                            <Features />
+                        </MainLayout>
+                    }
                 />
 
                 {/* --- PROTECTED ROUTES --- */}
                 <Route path="/dashboard" element={<ProtectedRoute><MainLayout><Dashboard /></MainLayout></ProtectedRoute>} />
                 <Route path="/phonemes" element={<ProtectedRoute><MainLayout><Phonemes /></MainLayout></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
-                
+
                 {/* Lazy Loaded Protected Routes */}
                 <Route path="/practice" element={<ProtectedRoute><MainLayout><Suspense fallback={<LoadingOverlay />}><Practice /></Suspense></MainLayout></ProtectedRoute>} />
                 <Route path="/progress" element={<ProtectedRoute><MainLayout><Suspense fallback={<LoadingOverlay />}><Progress /></Suspense></MainLayout></ProtectedRoute>} />

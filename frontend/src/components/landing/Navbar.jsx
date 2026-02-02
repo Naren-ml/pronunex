@@ -8,12 +8,11 @@ export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // UPDATED: Added 'Pricing' to the navigation links
     const navLinks = [
         { name: 'About Us', href: '/about' },
-        { name: 'Pricing', href: '/pricing' }, // <--- New Link Added Here
+        { name: 'Pricing', href: '/pricing' },
         { name: 'Docs', href: '/docs' },
-        { name: 'Features', href: '/#features' },
+        { name: 'Features', href: '/features' }, // <--- Fixed this to point to the new page
         { name: 'How It Works', href: '/#how-it-works' },
         { name: 'Practice', href: '/practice' },
     ];
