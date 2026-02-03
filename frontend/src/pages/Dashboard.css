@@ -8,7 +8,7 @@
     flex-direction: column;
     flex: 1;
     padding: 1.5rem;
-    background: var(--color-neutral-50);
+    background: var(--bg-secondary);
     position: relative;
 }
 
@@ -190,7 +190,7 @@
 
 /* Profile Card - Enterprise Style */
 .dashboard__profile-card {
-    background: #ffffff;
+    background: var(--surface-primary);
     border-radius: var(--radius-xl);
     padding: var(--space-5);
     border: 1px solid var(--border-subtle);
@@ -372,7 +372,7 @@
 
 /* Stat Card - Enterprise Style */
 .dashboard__stat-card {
-    background: #ffffff;
+    background: var(--surface-primary);
     border-radius: var(--radius-xl);
     padding: var(--space-4);
     border: 1px solid var(--border-subtle);
@@ -422,7 +422,7 @@
 
 /* Weekly Progress Chart - Enterprise Style */
 .dashboard__chart-card {
-    background: #ffffff;
+    background: var(--surface-primary);
     border-radius: var(--radius-xl);
     padding: var(--space-5);
     border: 1px solid var(--border-subtle);
@@ -521,7 +521,7 @@
 
 /* Quick Actions - Enterprise Style */
 .dashboard__quick-actions {
-    background: #ffffff;
+    background: var(--surface-primary);
     border-radius: var(--radius-xl);
     padding: var(--space-4);
     border: 1px solid var(--border-subtle);
@@ -601,7 +601,7 @@
 
 /* Words to Review - Enterprise Style */
 .dashboard__words-review {
-    background: #ffffff;
+    background: var(--surface-primary);
     border-radius: var(--radius-xl);
     padding: var(--space-4);
     border: 1px solid var(--border-subtle);
@@ -667,7 +667,7 @@
 }
 
 .dashboard__heatmap-card {
-    background: #ffffff;
+    background: var(--surface-primary);
     border-radius: var(--radius-xl);
     padding: var(--space-5);
     border: 1px solid var(--border-subtle);
@@ -811,4 +811,37 @@
 
 .dashboard__right-column {
     animation-delay: 0.2s;
+}
+
+/* ============================================
+   Dark Mode Overrides
+   ============================================ */
+[data-theme='dark'] .dashboard__word-item {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+[data-theme='dark'] .dashboard__word-phoneme {
+    color: #f87171;
+}
+
+[data-theme='dark'] .dashboard__word-practice {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+
+[data-theme='dark'] .dashboard__word-practice:hover {
+    background: rgba(16, 185, 129, 0.25);
+}
+
+[data-theme='dark'] .dashboard__action-icon--primary {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+[data-theme='dark'] .dashboard__action-icon--success {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+[data-theme='dark'] .dashboard__action-icon--info {
+    background: rgba(59, 130, 246, 0.15);
 }

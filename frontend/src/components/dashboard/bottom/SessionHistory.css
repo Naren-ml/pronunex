@@ -1,0 +1,117 @@
+.session-history {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.session-history__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+
+.session-history__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.session-history__link {
+    font-size: 0.875rem;
+    color: var(--primary);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.session-history__link:hover {
+    color: var(--primary-dark);
+}
+
+.session-history__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.session-history__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-default);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+
+.session-history__item:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-light);
+}
+
+.session-history__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.session-history__date {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.session-history__meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 0.75rem;
+}
+
+.session-history__score {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.session-history__score-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+}
+
+.session-history__score-badge--high {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.session-history__score-badge--medium {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.session-history__score-badge--low {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.session-history__empty {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    background: var(--bg-default);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--border-light);
+}

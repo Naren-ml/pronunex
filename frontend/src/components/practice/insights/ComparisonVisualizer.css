@@ -1,0 +1,51 @@
+.comparison-visualizer {
+    background: var(--bg-default);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+}
+
+.cv-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+
+.cv-track {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.cv-label {
+    width: 80px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-align: right;
+}
+
+.cv-canvas {
+    flex: 1;
+    background: var(--bg-subtle);
+    border-radius: var(--radius-sm);
+    height: 60px;
+    width: 100%;
+}
+
+.cv-legend {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.cv-legend-item {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}

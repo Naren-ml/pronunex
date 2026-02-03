@@ -51,6 +51,7 @@ class ProgressDashboardView(APIView):
             'phoneme_progress': PhonemeProgressSerializer(stats['phoneme_progress'], many=True).data,
             'weekly_scores': stats['weekly_scores'],
             'weekly_labels': stats['weekly_labels'],
+            'daily_goal_progress': stats.get('daily_goal_progress', 0),
         }
         
         return Response(response_data)

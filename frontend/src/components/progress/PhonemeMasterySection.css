@@ -257,8 +257,31 @@
         flex-wrap: nowrap;
         padding-bottom: var(--space-2);
     }
-    
+
     .phoneme-mastery__filter-btn {
         white-space: nowrap;
     }
+}
+
+/* ============================================
+   Dark Mode Overrides
+   ============================================ */
+[data-theme='dark'] .phoneme-mastery__badge--mastered {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+
+[data-theme='dark'] .phoneme-mastery__badge--proficient {
+    background: rgba(20, 184, 166, 0.15);
+    color: #5eead4;
+}
+
+[data-theme='dark'] .phoneme-mastery__badge--developing {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+
+[data-theme='dark'] .phoneme-mastery__badge--needs-work {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
 }

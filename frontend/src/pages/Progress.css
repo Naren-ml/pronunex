@@ -343,3 +343,34 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================
+   Dark Mode Overrides
+   ============================================ */
+[data-theme='dark'] .progress__focus-item {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+[data-theme='dark'] .progress__focus-symbol {
+    color: #f87171;
+}
+
+[data-theme='dark'] .progress__focus-score {
+    color: #fca5a5;
+}
+
+[data-theme='dark'] .progress__history-score--good {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+
+[data-theme='dark'] .progress__history-score--needs-work {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+
+[data-theme='dark'] .progress__history-score--excellent {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}

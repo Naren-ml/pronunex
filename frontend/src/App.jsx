@@ -22,8 +22,8 @@ import Profile from './pages/Profile';
 // Import your NEW pages
 import AboutUs from './pages/AboutUs';
 import Docs from './pages/Docs';
-import Pricing from './pages/Pricing';
-import Contact from './pages/Contact';
+import Pricing from './pages/Pricing'; // Added this back
+import Contact from './pages/Contact'; // Added this back
 import Navbar from './components/landing/Navbar';
 import Features from './pages/Features';
 
@@ -84,32 +84,8 @@ function App() {
                 />
 
                 {/* --- PUBLIC INFO PAGES --- */}
-                <Route
-                    path="/about"
-                    element={
-                        <MainLayout>
-                            <AboutUs />
-                        </MainLayout>
-                    }
-                />
-                <Route
-                    path="/docs"
-                    element={
-                        <MainLayout>
-                            <Docs />
-                        </MainLayout>
-                    }
-                />
-                <Route
-                    path="/pricing"
-                    element={
-                        <MainLayout>
-                            <Pricing />
-                        </MainLayout>
-                    }
-                />
-                <Route
-                    path="/contact"
+                <Route 
+                    path="/about" 
                     element={
                         <MainLayout>
                             <Contact />
@@ -124,12 +100,28 @@ function App() {
                         </MainLayout>
                     }
                 />
+                <Route 
+                    path="/pricing" 
+                    element={
+                        <MainLayout>
+                            <Pricing />
+                        </MainLayout>
+                    } 
+                />
+                <Route 
+                    path="/contact" 
+                    element={
+                        <MainLayout>
+                            <Contact />
+                        </MainLayout>
+                    } 
+                />
 
                 {/* --- PROTECTED ROUTES --- */}
                 <Route path="/dashboard" element={<ProtectedRoute><MainLayout><Dashboard /></MainLayout></ProtectedRoute>} />
                 <Route path="/phonemes" element={<ProtectedRoute><MainLayout><Phonemes /></MainLayout></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
-
+                
                 {/* Lazy Loaded Protected Routes */}
                 <Route path="/practice" element={<ProtectedRoute><MainLayout><Suspense fallback={<LoadingOverlay />}><Practice /></Suspense></MainLayout></ProtectedRoute>} />
                 <Route path="/progress" element={<ProtectedRoute><MainLayout><Suspense fallback={<LoadingOverlay />}><Progress /></Suspense></MainLayout></ProtectedRoute>} />

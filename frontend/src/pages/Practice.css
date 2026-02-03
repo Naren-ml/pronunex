@@ -914,3 +914,60 @@
 .practice__recorder-panel:hover {
     box-shadow: var(--shadow-lg);
 }
+
+/* Dark mode recorder panel */
+[data-theme='dark'] .practice__recorder-panel {
+    background: rgba(26, 26, 26, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .practice__waveform-container {
+    background: #1a1a1a;
+}
+
+[data-theme='dark'] .practice__recording-indicator {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+[data-theme='dark'] .practice__recording-text {
+    color: #f87171;
+}
+
+/* Word heatmap dark mode */
+[data-theme='dark'] .practice__heatmap-word--correct {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+[data-theme='dark'] .practice__heatmap-word--needs-work {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+[data-theme='dark'] .practice__heatmap-word--incorrect {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Feedback section dark mode */
+[data-theme='dark'] .practice__feedback {
+    background: rgba(20, 184, 166, 0.1);
+    border-left-color: var(--color-primary-400);
+}
+
+/* Weak phonemes dark mode */
+[data-theme='dark'] .practice__weak-phoneme {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+[data-theme='dark'] .practice__weak-phoneme-symbol {
+    color: #f87171;
+}
+
+[data-theme='dark'] .practice__weak-phoneme-score {
+    color: #fca5a5;
+}

@@ -175,9 +175,39 @@ class AssessmentView(APIView):
         assessment_service = AssessmentService()
         result = assessment_service.process_attempt(audio_file, sentence)
         
+        # Handle expected error cases (return 200 so frontend can display them)
         if not result.get('success', False):
+            error_type = result.get('error')
+            
+            # Content mismatch - user said wrong sentence
+            if error_type == 'content_mismatch':
+                logger.info(f"Content mismatch for user {request.user.email}: {result.get('transcribed')}")
+                return Response({
+                    'success': False,
+                    'error': 'content_mismatch',
+                    'message': result.get('message', 'Speech did not match expected sentence.'),
+                    'transcribed': result.get('transcribed', ''),
+                    'expected': sentence.text,
+                    'similarity': result.get('similarity', 0.0),
+                    'suggestion': result.get('suggestion', 'Please try again.'),
+                }, status=status.HTTP_200_OK)
+            
+            # Unscorable - technical failure
+            elif error_type == 'unscorable':
+                logger.warning(f"Unscorable attempt for user {request.user.email}: {result.get('reason')}")
+                return Response({
+                    'success': False,
+                    'error': 'unscorable',
+                    'message': result.get('message', 'Could not analyze audio.'),
+                    'reason': result.get('reason', 'unknown'),
+                    'transcribed': result.get('transcribed', ''),
+                    'suggestion': result.get('suggestion', 'Please try again.'),
+                }, status=status.HTTP_200_OK)
+            
+            # Unknown error - return 500
+            logger.error(f"Assessment failed for user {request.user.email}: {result}")
             return Response(
-                {'error': result.get('error', 'Assessment failed.')},
+                {'error': error_type or 'Assessment failed.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
@@ -195,11 +225,14 @@ class AssessmentView(APIView):
         logger.info(f"Assessment completed for user {request.user.email}: score {result['overall_score']}")
         
         response_data = {
+            'success': True,
             'overall_score': result['overall_score'],
             'fluency_score': result.get('fluency_score'),
             'phoneme_scores': result['phoneme_scores'],
             'weak_phonemes': result['weak_phonemes'],
             'llm_feedback': result['llm_feedback'],
+            'mistakes': result.get('mistakes'),
+            'transcribed': result.get('transcribed'),
             'processing_time_ms': result['processing_time_ms'],
             'attempt_id': attempt.id,
         }

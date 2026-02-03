@@ -120,6 +120,13 @@ class AggregationService:
         # Calculate total practice minutes
         total_minutes = sum(p.total_practice_minutes for p in recent_progress)
         
+        # Calculate Daily Goal Progress (Goal: 10 sentences/attempts)
+        today = timezone.now().date()
+        today_progress = progress_map.get(today)
+        sentences_today = today_progress.attempts_count if today_progress else 0
+        daily_goal_sentences = 10
+        daily_goal_progress = min(int((sentences_today / daily_goal_sentences) * 100), 100)
+
         return {
             'session_stats': session_stats,
             'attempt_stats': attempt_stats,
@@ -132,6 +139,7 @@ class AggregationService:
             'weekly_scores': weekly_scores,
             'weekly_labels': weekly_labels,
             'total_practice_minutes': round(total_minutes, 1),
+            'daily_goal_progress': daily_goal_progress,
         }
     
     def _calculate_score_trend(self, recent_progress):

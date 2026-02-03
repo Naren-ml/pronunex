@@ -21,8 +21,9 @@ function ConfidenceMeter({ audioStream, isRecording }) {
             if (animationRef.current) {
                 cancelAnimationFrame(animationRef.current);
             }
-            if (audioContextRef.current) {
-                audioContextRef.current.close();
+            // Only close if context exists and is not already closed
+            if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+                audioContextRef.current.close().catch(() => { });
                 audioContextRef.current = null;
             }
             return;
@@ -71,8 +72,8 @@ function ConfidenceMeter({ audioStream, isRecording }) {
             if (animationRef.current) {
                 cancelAnimationFrame(animationRef.current);
             }
-            if (audioContextRef.current) {
-                audioContextRef.current.close();
+            if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+                audioContextRef.current.close().catch(() => { });
             }
         };
     }, [isRecording, audioStream]);

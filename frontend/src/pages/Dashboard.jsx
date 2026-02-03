@@ -480,7 +480,7 @@ export function Dashboard() {
         streak_days: stats.streak?.current_streak ?? stats.streak_days ?? 0,
         weak_phonemes: stats.current_weak_phonemes || [],
         weak_phonemes_count: stats.current_weak_phonemes?.length ?? stats.weak_phonemes_count ?? 0,
-        daily_goal_progress: stats.daily_goal_progress || 60,
+        daily_goal_progress: stats.daily_goal_progress || 0,
         weekly_scores: stats.weekly_scores || [0, 0, 0, 0, 0, 0, 0],
         weekly_labels: stats.weekly_labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     };
@@ -701,9 +701,29 @@ export function Dashboard() {
                 </aside>
 
 
+                {/* Bottom Section - 2x2 Grid */}
+                <section className="dashboard__bottom-section" style={{
+                    gridColumn: '1 / -1',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: '1.5rem',
+                    marginTop: '0.5rem'
+                }}>
+                    <SessionHistory />
+                    <QuickPractice />
+                    <PhonemeMastery />
+                    <LearningTips />
+                </section>
+
             </div>
         </div>
     );
 }
+
+// Lazy load bottom components to avoid circular deps if any
+import { SessionHistory } from '../components/dashboard/bottom/SessionHistory';
+import { QuickPractice } from '../components/dashboard/bottom/QuickPractice';
+import { PhonemeMastery } from '../components/dashboard/bottom/PhonemeMastery';
+import { LearningTips } from '../components/dashboard/bottom/LearningTips';
 
 export default Dashboard;
