@@ -1,12 +1,18 @@
 """
 Vectorizer Module for Pronunex.
 
-Converts audio slices to embedding vectors using Wav2Vec2.
-These embeddings are used for pronunciation similarity scoring.
+REWRITTEN to fix the "Context-Blind" bug.
+
+OLD (BROKEN): Slice audio → Feed slices to model → Garbage embeddings
+NEW (FIXED):  Feed full audio → Get full embeddings → Slice tensor
+
+Wav2Vec2 is a Transformer that needs CONTEXT to understand sounds.
+When you feed it tiny slices, it hears noise, not speech.
+The fix is to process the FULL audio and then slice the embedding TENSOR.
 """
 
 import logging
-from typing import List
+from typing import List, Dict, Tuple, Optional
 import pickle
 import numpy as np
 import torch
@@ -19,6 +25,9 @@ logger = logging.getLogger(__name__)
 # Singleton model for embedding generation
 _embedding_processor = None
 _embedding_model = None
+
+# Wav2Vec2 stride: ~320 samples at 16kHz = 0.02 seconds per frame
+WAV2VEC2_STRIDE_SECONDS = 320 / 16000  # 0.02
 
 
 def get_embedding_model():
@@ -35,16 +44,154 @@ def get_embedding_model():
     return _embedding_processor, _embedding_model
 
 
-def audio_to_embedding(audio_slice: np.ndarray, sample_rate: int = 16000) -> np.ndarray:
+# =============================================================================
+# NEW: Contextual Embedding Functions (Tensor Slicing)
+# =============================================================================
+
+def compute_contextual_embeddings(audio_path: str) -> Tuple[np.ndarray, float]:
     """
-    Convert a single audio slice to an embedding vector.
+    Compute FULL contextual embeddings for entire audio.
+    
+    This preserves the context that Wav2Vec2 needs to understand speech.
+    The model "hears" the entire audio and produces frame-level embeddings.
     
     Args:
-        audio_slice: Audio waveform as numpy array
-        sample_rate: Sample rate (default 16kHz)
+        audio_path: Path to audio file
     
     Returns:
-        np.ndarray: 768-dimensional embedding vector
+        Tuple of (embedding_matrix, stride_seconds)
+        - embedding_matrix: Shape [num_frames, 768]
+        - stride_seconds: Time per frame (~0.02s)
+    """
+    processor, model = get_embedding_model()
+    
+    try:
+        # Load full audio
+        waveform, sr = torchaudio.load(audio_path)
+        
+        # Resample to 16kHz if needed
+        if sr != 16000:
+            resampler = torchaudio.transforms.Resample(sr, 16000)
+            waveform = resampler(waveform)
+            sr = 16000
+        
+        # Convert to mono
+        if waveform.shape[0] > 1:
+            waveform = torch.mean(waveform, dim=0, keepdim=True)
+        
+        # Get full embeddings - model processes ENTIRE audio with full context
+        inputs = processor(
+            waveform.squeeze().numpy(),
+            sampling_rate=sr,
+            return_tensors="pt",
+            padding=True
+        )
+        
+        with torch.no_grad():
+            outputs = model(**inputs)
+            # Shape: [1, num_frames, 768]
+            full_embeddings = outputs.last_hidden_state[0].numpy()
+        
+        logger.debug(f"Full contextual embeddings shape: {full_embeddings.shape}")
+        
+        return full_embeddings, WAV2VEC2_STRIDE_SECONDS
+        
+    except Exception as e:
+        logger.error(f"Contextual embedding computation failed: {str(e)}")
+        return np.zeros((1, 768)), WAV2VEC2_STRIDE_SECONDS
+
+
+def slice_embeddings_by_timestamps(
+    full_embeddings: np.ndarray,
+    timestamps: List[Dict],
+    stride_seconds: float = WAV2VEC2_STRIDE_SECONDS
+) -> List[np.ndarray]:
+    """
+    Slice the embedding TENSOR using timestamps.
+    
+    This is the KEY FIX: We slice the TENSOR, not the audio!
+    The embeddings already contain contextual information from the full audio.
+    
+    Args:
+        full_embeddings: Shape [num_frames, 768] from compute_contextual_embeddings
+        timestamps: List of {'start': float, 'end': float, 'phoneme': str}
+        stride_seconds: Time per embedding frame (default 0.02s)
+    
+    Returns:
+        List of 768-dim embedding vectors, one per phoneme
+    """
+    phoneme_embeddings = []
+    num_frames = full_embeddings.shape[0]
+    
+    for ts in timestamps:
+        # Convert time to frame indices
+        start_frame = int(ts['start'] / stride_seconds)
+        end_frame = int(ts['end'] / stride_seconds)
+        
+        # Ensure valid range
+        start_frame = max(0, start_frame)
+        end_frame = min(num_frames, end_frame)
+        
+        # Ensure at least one frame
+        if end_frame <= start_frame:
+            end_frame = start_frame + 1
+            if end_frame > num_frames:
+                start_frame = max(0, num_frames - 1)
+                end_frame = num_frames
+        
+        # Slice the TENSOR (contextual embeddings preserved!)
+        frame_slice = full_embeddings[start_frame:end_frame, :]
+        
+        # Mean pool to get single 768-dim vector
+        if frame_slice.shape[0] > 0:
+            pooled = np.mean(frame_slice, axis=0)
+        else:
+            pooled = np.zeros(768)
+        
+        phoneme_embeddings.append(pooled)
+    
+    logger.debug(f"Sliced {len(phoneme_embeddings)} phoneme embeddings from tensor")
+    
+    return phoneme_embeddings
+
+
+def compute_phoneme_embeddings(
+    audio_path: str,
+    timestamps: List[Dict]
+) -> List[np.ndarray]:
+    """
+    Main function: Get phoneme embeddings using contextual tensor slicing.
+    
+    This is the CORRECT way to get phoneme embeddings:
+    1. Feed FULL audio to model → preserves context
+    2. Get full embedding matrix
+    3. Slice the TENSOR by timestamps → each phoneme gets contextual embedding
+    
+    Args:
+        audio_path: Path to cleaned audio file
+        timestamps: List of phoneme timestamps
+    
+    Returns:
+        List of 768-dim embeddings, one per phoneme
+    """
+    # Step 1: Get full contextual embeddings
+    full_embeddings, stride = compute_contextual_embeddings(audio_path)
+    
+    # Step 2: Slice tensor by timestamps
+    return slice_embeddings_by_timestamps(full_embeddings, timestamps, stride)
+
+
+# =============================================================================
+# LEGACY: Old Functions (Deprecated but kept for backward compatibility)
+# =============================================================================
+
+def audio_to_embedding(audio_slice: np.ndarray, sample_rate: int = 16000) -> np.ndarray:
+    """
+    DEPRECATED: This function has the context-blind bug.
+    
+    Use compute_phoneme_embeddings() with tensor slicing instead.
+    
+    Kept for backward compatibility with reference embedding generation.
     """
     processor, model = get_embedding_model()
     
@@ -63,7 +210,6 @@ def audio_to_embedding(audio_slice: np.ndarray, sample_rate: int = 16000) -> np.
         
         with torch.no_grad():
             outputs = model(**inputs)
-            # Get the mean of hidden states as embedding
             hidden_states = outputs.last_hidden_state
             embedding = torch.mean(hidden_states, dim=1).squeeze().numpy()
         
@@ -71,22 +217,22 @@ def audio_to_embedding(audio_slice: np.ndarray, sample_rate: int = 16000) -> np.
         
     except Exception as e:
         logger.error(f"Embedding generation failed: {str(e)}")
-        # Return zero vector on failure
         return np.zeros(settings.SCORING_CONFIG.get('EMBEDDING_DIM', 768))
 
 
 def batch_audio_to_embeddings(audio_slices: List[np.ndarray]) -> List[np.ndarray]:
     """
-    Convert multiple audio slices to embeddings.
+    DEPRECATED: Use compute_phoneme_embeddings() instead.
     
-    Args:
-        audio_slices: List of audio waveforms
-    
-    Returns:
-        List of embedding vectors
+    This function slices audio which destroys Wav2Vec2 context.
+    Kept for backward compatibility.
     """
-    embeddings = []
+    logger.warning(
+        "batch_audio_to_embeddings is DEPRECATED! "
+        "Use compute_phoneme_embeddings() for contextual embeddings."
+    )
     
+    embeddings = []
     for i, audio_slice in enumerate(audio_slices):
         try:
             embedding = audio_to_embedding(audio_slice)
@@ -103,7 +249,7 @@ def compute_sentence_embedding(audio_path: str, sample_rate: int = 16000) -> np.
     Compute a single embedding for an entire audio file.
     
     This is used when phoneme-level alignment is not available.
-    Generates one embedding representing the full sentence pronunciation.
+    Now uses the full contextual embedding approach.
     
     Args:
         audio_path: Path to audio file
@@ -112,24 +258,20 @@ def compute_sentence_embedding(audio_path: str, sample_rate: int = 16000) -> np.
     Returns:
         np.ndarray: 768-dimensional embedding vector
     """
-    import librosa
-    
-    # Load audio file
     try:
-        audio, sr = librosa.load(audio_path, sr=sample_rate)
+        # Use contextual embeddings and mean pool the entire thing
+        full_embeddings, _ = compute_contextual_embeddings(audio_path)
+        return np.mean(full_embeddings, axis=0)
     except Exception as e:
-        logger.error(f"Failed to load audio for embedding: {str(e)}")
+        logger.error(f"Sentence embedding failed: {str(e)}")
         return np.zeros(settings.SCORING_CONFIG.get('EMBEDDING_DIM', 768))
-    
-    # Compute embedding from full audio
-    return audio_to_embedding(audio, sample_rate)
 
 
 def compute_reference_embeddings(sentence) -> List[np.ndarray]:
     """
     Compute reference embeddings for a sentence.
     
-    This should be run during data seeding, not during assessment.
+    UPDATED to use contextual tensor slicing.
     
     Args:
         sentence: ReferenceSentence model instance
@@ -138,7 +280,6 @@ def compute_reference_embeddings(sentence) -> List[np.ndarray]:
         List of embedding vectors for each phoneme
     """
     from .audio_cleaner import clean_audio
-    from .audio_slicer import slice_audio_by_timestamps
     
     audio_source = sentence.get_audio_source()
     if not audio_source:
@@ -150,14 +291,15 @@ def compute_reference_embeddings(sentence) -> List[np.ndarray]:
     # Get timestamps from alignment map
     timestamps = sentence.alignment_map
     
-    # Slice audio
-    slices = slice_audio_by_timestamps(cleaned_path, timestamps)
-    
-    # Generate embeddings
-    embeddings = batch_audio_to_embeddings(slices)
+    # Use NEW contextual method
+    embeddings = compute_phoneme_embeddings(cleaned_path, timestamps)
     
     return embeddings
 
+
+# =============================================================================
+# Serialization Functions
+# =============================================================================
 
 def serialize_embeddings(embeddings: List[np.ndarray]) -> bytes:
     """
@@ -198,7 +340,6 @@ def embedding_distance(emb1: np.ndarray, emb2: np.ndarray, metric: str = 'cosine
         float: Distance value
     """
     if metric == 'cosine':
-        # Cosine distance (1 - cosine similarity)
         from scipy.spatial.distance import cosine
         return cosine(emb1, emb2)
     elif metric == 'euclidean':

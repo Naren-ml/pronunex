@@ -7,12 +7,11 @@
 import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
-import { Navbar } from './components/Navbar';
 import { ToastContainer } from './components/Toast';
 import { LoadingOverlay } from './components/Loader';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-// Eager loaded pages (small, frequently used)
+// Eager loaded pages
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
@@ -22,53 +21,55 @@ import Phonemes from './pages/Phonemes';
 import Profile from './pages/Profile';
 import SettingsPage from './pages/SettingsPage';
 
-// Lazy loaded pages (heavy components)
+// Import your NEW pages
+import AboutUs from './pages/AboutUs';
+import Docs from './pages/Docs';
+import Pricing from './pages/Pricing'; // Added this back
+import Contact from './pages/Contact'; // Added this back
+import LandingNavbar from './components/landing/Navbar';
+import AuthNavbar from './components/Navbar';
+import Features from './pages/Features';
+import HowItWorks from './pages/HowItWorks';
+
+// Lazy loaded pages
 const Practice = lazy(() => import('./pages/Practice'));
 const Progress = lazy(() => import('./pages/Progress'));
 const AdminProfile = lazy(() => import('./pages/AdminProfile'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 
-/**
- * Protected Route wrapper
- */
 function ProtectedRoute({ children }) {
     const { isAuthenticated, isLoading } = useAuth();
-
-    if (isLoading) {
-        return <LoadingOverlay message="Loading..." />;
-    }
-
-    if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
-    }
-
+    if (isLoading) return <LoadingOverlay message="Loading..." />;
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
     return children;
 }
 
-/**
- * Public Route wrapper (redirect to dashboard if already logged in)
- */
 function PublicRoute({ children }) {
     const { isAuthenticated, isLoading } = useAuth();
-
-    if (isLoading) {
-        return <LoadingOverlay message="Loading..." />;
-    }
-
-    if (isAuthenticated) {
-        return <Navigate to="/dashboard" replace />;
-    }
-
+    if (isLoading) return <LoadingOverlay message="Loading..." />;
+    if (isAuthenticated) return <Navigate to="/dashboard" replace />;
     return children;
 }
 
-/**
- * Main layout with navbar
- */
+// Smart MainLayout - uses correct navbar based on auth state (for protected routes)
 function MainLayout({ children }) {
+    const { isAuthenticated } = useAuth();
+
     return (
         <div className="app-layout">
-            <Navbar />
+            {isAuthenticated ? <AuthNavbar /> : <LandingNavbar />}
+            <main className="app-main">
+                <ErrorBoundary>{children}</ErrorBoundary>
+            </main>
+        </div>
+    );
+}
+
+// PublicLayout - always uses LandingNavbar (for public pages like landing, about, pricing)
+function PublicLayout({ children }) {
+    return (
+        <div className="app-layout">
+            <LandingNavbar />
             <main className="app-main">
                 <ErrorBoundary>{children}</ErrorBoundary>
             </main>
@@ -81,119 +82,76 @@ function App() {
         <ErrorBoundary>
             <ToastContainer />
             <Routes>
-                {/* Public routes */}
-                <Route
-                    path="/login"
-                    element={
-                        <PublicRoute>
-                            <Login />
-                        </PublicRoute>
-                    }
-                />
-                <Route
-                    path="/signup"
-                    element={
-                        <PublicRoute>
-                            <Signup />
-                        </PublicRoute>
-                    }
-                />
-                <Route
-                    path="/forgot-password"
-                    element={<ForgotPassword />}
-                />
-                <Route
-                    path="/reset-password"
-                    element={<ResetPassword />}
-                />
+                {/* --- AUTH ROUTES --- */}
+                <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+                <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
 
-                {/* Landing page accessible to all users */}
+                {/* --- LANDING PAGE --- */}
                 <Route
                     path="/"
                     element={
                         <Suspense fallback={<LoadingOverlay message="Loading..." />}>
-                            <LandingPage />
+                            <PublicLayout>
+                                <LandingPage />
+                            </PublicLayout>
                         </Suspense>
                     }
                 />
 
-                {/* Protected routes */}
+                {/* --- PUBLIC INFO PAGES --- */}
                 <Route
-                    path="/dashboard"
+                    path="/about"
                     element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <Dashboard />
-                            </MainLayout>
-                        </ProtectedRoute>
+                        <PublicLayout>
+                            <Contact />
+                        </PublicLayout>
                     }
                 />
                 <Route
-                    path="/practice"
+                    path="/features"
                     element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <Suspense fallback={<LoadingOverlay message="Loading practice..." />}>
-                                    <Practice />
-                                </Suspense>
-                            </MainLayout>
-                        </ProtectedRoute>
+                        <PublicLayout>
+                            <Features />
+                        </PublicLayout>
                     }
                 />
                 <Route
-                    path="/progress"
+                    path="/how-it-works"
                     element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <Suspense fallback={<LoadingOverlay message="Loading analytics..." />}>
-                                    <Progress />
-                                </Suspense>
-                            </MainLayout>
-                        </ProtectedRoute>
+                        <PublicLayout>
+                            <HowItWorks />
+                        </PublicLayout>
                     }
                 />
                 <Route
-                    path="/phonemes"
+                    path="/pricing"
                     element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <Phonemes />
-                            </MainLayout>
-                        </ProtectedRoute>
+                        <PublicLayout>
+                            <Pricing />
+                        </PublicLayout>
                     }
                 />
                 <Route
-                    path="/profile"
+                    path="/contact"
                     element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <Profile />
-                            </MainLayout>
-                        </ProtectedRoute>
+                        <PublicLayout>
+                            <Contact />
+                        </PublicLayout>
                     }
                 />
-                <Route
-                    path="/settings"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <SettingsPage />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/admin"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <Suspense fallback={<LoadingOverlay message="Loading admin..." />}>
-                                    <AdminProfile />
-                                </Suspense>
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
+
+                {/* --- PROTECTED ROUTES --- */}
+                <Route path="/dashboard" element={<ProtectedRoute><MainLayout><Dashboard /></MainLayout></ProtectedRoute>} />
+                <Route path="/phonemes" element={<ProtectedRoute><MainLayout><Phonemes /></MainLayout></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><MainLayout><SettingsPage /></MainLayout></ProtectedRoute>} />
+
+                {/* Lazy Loaded Protected Routes */}
+                <Route path="/practice" element={<ProtectedRoute><MainLayout><Suspense fallback={<LoadingOverlay />}><Practice /></Suspense></MainLayout></ProtectedRoute>} />
+                <Route path="/progress" element={<ProtectedRoute><MainLayout><Suspense fallback={<LoadingOverlay />}><Progress /></Suspense></MainLayout></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute><MainLayout><Suspense fallback={<LoadingOverlay />}><AdminProfile /></Suspense></MainLayout></ProtectedRoute>} />
 
                 {/* Catch-all redirect */}
                 <Route path="*" element={<Navigate to="/" replace />} />
@@ -202,7 +160,7 @@ function App() {
     );
 }
 
-export default App;
+// Narendra Changes
 import Games from "./pages/Games";
 
-
+export default App;

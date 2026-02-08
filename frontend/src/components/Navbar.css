@@ -88,30 +88,35 @@
 }
 
 /* ============================================
-   Center Section - Navigation
+   Center Section - Floating Pill Navigation
    ============================================ */
 .navbar__nav {
     display: none;
     align-items: center;
-    gap: var(--space-1);
+    gap: 0.25rem;
     margin: 0;
-    padding: 0;
+    padding: 0.25rem;
     list-style: none;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(241, 245, 249, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+    border-radius: 50px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Dark mode pill container */
+[data-theme='dark'] .navbar__nav {
+    background: linear-gradient(135deg, rgba(45, 45, 45, 0.9) 0%, rgba(55, 55, 55, 0.9) 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 @media (min-width: 768px) {
     .navbar__nav {
         display: flex;
-        position: static;
-        transform: none;
-    }
-}
-
-@media (min-width: 1024px) {
-    .navbar__nav {
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
@@ -123,41 +128,48 @@
 }
 
 .navbar__nav-link {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--text-sm);
-    font-weight: var(--font-medium);
+    gap: 0.4rem;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--text-secondary);
     text-decoration: none;
-    border-radius: var(--radius-lg);
-    transition: all var(--transition-fast);
-    position: relative;
+    border-radius: 40px;
+    transition: all 0.25s ease;
+    white-space: nowrap;
 }
 
 .navbar__nav-link:hover {
     color: var(--text-primary);
-    background-color: var(--surface-hover);
+    background: rgba(255, 255, 255, 0.8);
 }
 
-/* Active State - Glowing Underline */
+[data-theme='dark'] .navbar__nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Active State - Pill with Glowing Underline */
 .navbar__nav-link--active {
     color: var(--color-primary-600);
-    font-weight: var(--font-semibold);
+    font-weight: 600;
 }
 
 .navbar__nav-link--active::after {
     content: '';
     position: absolute;
-    bottom: -2px;
+    bottom: 6px;
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - var(--space-3));
-    height: 2px;
-    background: var(--color-primary-500);
-    border-radius: var(--radius-full);
-    box-shadow: var(--glow-primary);
+    width: 70%;
+    height: 2.5px;
+    background: linear-gradient(90deg, var(--color-primary-500) 0%, var(--color-primary-400) 100%);
+    border-radius: 3px;
+    box-shadow:
+        0 0 8px var(--color-primary-500),
+        0 0 16px color-mix(in srgb, var(--color-primary-500) 40%, transparent);
 }
 
 .navbar__nav-link:focus-visible {
@@ -165,18 +177,20 @@
     box-shadow: var(--shadow-focus);
 }
 
-/* Nav Icon - Monochrome by default */
+/* Nav Icon - Dual-tone effect */
 .navbar__nav-link svg {
     color: var(--color-neutral-400);
-    transition: color var(--transition-fast);
+    transition: all 0.25s ease;
 }
 
 .navbar__nav-link:hover svg {
-    color: var(--color-neutral-600);
+    color: var(--color-primary-500);
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-primary-500) 30%, transparent));
 }
 
 .navbar__nav-link--active svg {
     color: var(--color-primary-500);
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-primary-500) 40%, transparent));
 }
 
 /* ============================================
@@ -349,7 +363,7 @@
     font-weight: var(--font-bold);
     color: white;
     text-transform: uppercase;
-    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 2px 4px color-mix(in srgb, var(--color-primary-500) 30%, transparent);
 }
 
 .navbar__user-name {

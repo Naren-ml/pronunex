@@ -1,0 +1,347 @@
+/**
+ * MistakePanel Styles - Dark Mode Theme
+ * 
+ * Updated for dark mode with proper accent colors
+ */
+
+/* Base Panel - Hidden since we removed from main results */
+.mistake-panel {
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    margin-top: var(--space-4);
+}
+
+.mistake-panel--success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.mistake-panel--warning {
+    background: rgba(234, 179, 8, 0.1);
+    border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.mistake-panel--info {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.mistake-panel--error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Header */
+.mistake-panel__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+}
+
+.mistake-panel__icon--success {
+    color: var(--primary);
+}
+
+.mistake-panel__title {
+    font-weight: 600;
+    font-size: var(--text-base);
+    color: var(--text-primary);
+}
+
+.mistake-panel__message {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Transcription Comparison */
+.mistake-panel__transcription {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    margin-bottom: var(--space-3);
+}
+
+.mistake-panel__transcription-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+}
+
+.mistake-panel__transcription-row:last-child {
+    margin-bottom: 0;
+}
+
+.mistake-panel__label {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    min-width: 80px;
+}
+
+.mistake-panel__value {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--text-sm);
+}
+
+.mistake-panel__value--user {
+    color: #f87171;
+}
+
+.mistake-panel__value--expected {
+    color: var(--primary);
+}
+
+/* Mistake List */
+.mistake-panel__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+}
+
+.mistake-panel__more {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    margin: 0;
+    padding-left: var(--space-3);
+}
+
+/* Individual Mistake Item */
+.mistake-item {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+}
+
+.mistake-item--critical {
+    border-left: 3px solid #f87171;
+}
+
+.mistake-item--minor {
+    border-left: 3px solid var(--accent, #f59e0b);
+}
+
+.mistake-item__icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.mistake-item__icon--missing {
+    color: #f87171;
+}
+
+.mistake-item__icon--wrong {
+    color: var(--accent, #f59e0b);
+}
+
+.mistake-item__icon--weak {
+    color: var(--primary);
+}
+
+.mistake-item__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.mistake-item__description {
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+}
+
+.mistake-item__score {
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+}
+
+/* Tips Section */
+.mistake-panel__tips {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+}
+
+.mistake-panel__tips-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--accent, #f59e0b);
+}
+
+.mistake-panel__tips-list {
+    margin: 0;
+    padding-left: var(--space-5);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.mistake-panel__tips-list li {
+    margin-bottom: var(--space-2);
+}
+
+.mistake-panel__tips-list li:last-child {
+    margin-bottom: 0;
+}
+
+.mistake-panel__tips-list li::marker {
+    color: var(--accent, #f59e0b);
+}
+
+/* ======================================
+   Content Mismatch Error - Dark Mode
+   ====================================== */
+.content-mismatch-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-6);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.content-mismatch-error__icon {
+    color: var(--accent, #f59e0b);
+    margin-bottom: var(--space-4);
+}
+
+.content-mismatch-error__title {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.content-mismatch-error__message {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+}
+
+.content-mismatch-error__comparison {
+    width: 100%;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.content-mismatch-error__row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+    text-align: left;
+}
+
+.content-mismatch-error__label {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    min-width: 80px;
+}
+
+.content-mismatch-error__value {
+    font-family: var(--font-mono, monospace);
+    font-size: var(--text-sm);
+    word-break: break-word;
+}
+
+.content-mismatch-error__value--user {
+    color: #f87171;
+}
+
+.content-mismatch-error__value--expected {
+    color: var(--primary);
+}
+
+.content-mismatch-error__similarity {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border-color);
+}
+
+.content-mismatch-error__suggestion {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+}
+
+.content-mismatch-error__retry-btn {
+    padding: var(--space-3) var(--space-6);
+    background: var(--accent-gradient, linear-gradient(135deg, #f59e0b, #d97706));
+    color: var(--bg-primary);
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.content-mismatch-error__retry-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* ======================================
+   Unscorable Error - Dark Mode
+   ====================================== */
+.unscorable-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-6);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-color);
+}
+
+.unscorable-error__icon {
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-4);
+}
+
+.unscorable-error__title {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.unscorable-error__message {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-3);
+}
+
+.unscorable-error__suggestion {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-4);
+}
+
+.unscorable-error__retry-btn {
+    padding: var(--space-3) var(--space-6);
+    background: var(--primary);
+    color: var(--bg-primary);
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.unscorable-error__retry-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}

@@ -23,6 +23,9 @@ def calculate_phoneme_scores(
     """
     Calculate cosine similarity scores for each phoneme.
     
+    UPDATED: Added validation and removed fake fallback.
+    Now returns 'unscorable' result instead of fake scores when comparison fails.
+    
     Args:
         user_embeddings: User's pronunciation embeddings
         reference_embeddings: Reference (gold standard) embeddings
@@ -30,14 +33,38 @@ def calculate_phoneme_scores(
         timestamps: Optional timing information
     
     Returns:
-        List of score dicts:
-        [{"phoneme": "S", "score": 0.92, "is_weak": False, "word": "she"}, ...]
+        List of score dicts, OR dict with 'status': 'unscorable' if validation fails
     """
     config = settings.SCORING_CONFIG
     threshold = config.get('WEAK_PHONEME_THRESHOLD', 0.7)
     
-    scores = []
+    # VALIDATION 1: Check embedding count match
+    if len(user_embeddings) != len(reference_embeddings):
+        logger.error(
+            f"Embedding count mismatch: user={len(user_embeddings)}, "
+            f"ref={len(reference_embeddings)}, phonemes={len(phonemes)}"
+        )
+        return generate_unscorable_result(phonemes, "embedding_count_mismatch")
     
+    if len(user_embeddings) != len(phonemes):
+        logger.warning(
+            f"Phoneme count mismatch: embeddings={len(user_embeddings)}, "
+            f"phonemes={len(phonemes)}. Using min length."
+        )
+    
+    # VALIDATION 2: Check for zero/corrupt embeddings
+    zero_count = sum(1 for emb in user_embeddings if np.all(emb == 0))
+    if zero_count > len(user_embeddings) * 0.5:  # >50% zero is bad
+        logger.error(f"Too many zero embeddings: {zero_count}/{len(user_embeddings)}")
+        return generate_unscorable_result(phonemes, "embedding_quality_poor")
+    
+    # Check for NaN embeddings
+    nan_count = sum(1 for emb in user_embeddings if np.any(np.isnan(emb)))
+    if nan_count > 0:
+        logger.error(f"Found {nan_count} NaN embeddings")
+        return generate_unscorable_result(phonemes, "nan_embeddings")
+    
+    scores = []
     min_len = min(len(user_embeddings), len(reference_embeddings), len(phonemes))
     
     for i in range(min_len):
@@ -45,17 +72,18 @@ def calculate_phoneme_scores(
         ref_emb = reference_embeddings[i]
         phoneme = phonemes[i]
         
-        # Calculate cosine similarity (1 - cosine distance)
+        # Calculate cosine similarity
         try:
             similarity = calculate_cosine_similarity(user_emb, ref_emb)
         except Exception as e:
-            logger.warning(f"Similarity calculation failed for phoneme {i}: {str(e)}")
+            logger.warning(f"Similarity failed for phoneme {i}: {str(e)}")
             similarity = 0.0
         
         score_entry = {
             'phoneme': phoneme,
             'score': round(float(similarity), 3),
             'is_weak': bool(similarity < threshold),
+            'index': i,  # Add index for mistake detection
         }
         
         # Add timing info if available
@@ -68,79 +96,68 @@ def calculate_phoneme_scores(
         
         scores.append(score_entry)
     
-    # Fallback: if all scores are 0, use adaptive scoring based on audio presence
+    # HONEST FAILURE: If all scores are 0, return unscorable (no fake scores!)
     if scores and all(s['score'] == 0 for s in scores):
-        logger.warning("All phoneme scores are 0 - using adaptive fallback scoring")
-        scores = generate_adaptive_scores(phonemes, timestamps)
+        logger.error("All phoneme scores are 0 - real failure, not using fake scores")
+        return generate_unscorable_result(phonemes, "all_scores_zero")
     
-    logger.debug(f"Calculated scores for {len(scores)} phonemes")
+    logger.debug(f"Calculated scores for {len(scores)} phonemes (validated)")
     
     return scores
 
 
-def generate_adaptive_scores(phonemes: List[str], timestamps: List[dict] = None) -> List[dict]:
+def generate_unscorable_result(phonemes: List[str], reason: str) -> dict:
     """
-    Generate DETERMINISTIC adaptive scores when embedding comparison fails.
+    Generate honest 'unscorable' result instead of fake scores.
     
-    Uses phoneme properties and position to create consistent per-phoneme scores.
-    This ensures reproducibility and follows the project rule: "All scoring is deterministic."
+    This replaces the old generate_adaptive_scores function.
+    When embedding comparison fails, we TELL THE USER instead of faking scores.
     
     Args:
         phonemes: Expected phoneme sequence
-        timestamps: Timing information if available
+        reason: Why scoring failed
     
     Returns:
-        List of adaptive phoneme scores
+        dict with status='unscorable' and helpful message
     """
-    config = settings.SCORING_CONFIG
-    threshold = config.get('WEAK_PHONEME_THRESHOLD', 0.7)
+    messages = {
+        'embedding_count_mismatch': 'Audio alignment produced different number of segments than expected.',
+        'embedding_quality_poor': 'Could not extract clear speech features from the audio.',
+        'nan_embeddings': 'Audio processing produced invalid results.',
+        'all_scores_zero': 'Could not compare pronunciation to reference.',
+    }
     
-    # Phoneme difficulty map with fixed base scores (deterministic)
-    difficult_phonemes = {'TH': 0.68, 'DH': 0.70, 'ZH': 0.65, 'R': 0.72, 'L': 0.74, 
-                          'NG': 0.69, 'SH': 0.73, 'CH': 0.71, 'JH': 0.67, 'W': 0.75, 'Y': 0.76}
-    medium_phonemes = {'S': 0.80, 'Z': 0.78, 'F': 0.82, 'V': 0.79, 'P': 0.85, 
-                       'B': 0.84, 'T': 0.86, 'D': 0.83, 'K': 0.87, 'G': 0.81}
-    easy_base = 0.88  # Default for easy phonemes (vowels, etc.)
+    suggestions = {
+        'embedding_count_mismatch': 'Try speaking the complete sentence more evenly.',
+        'embedding_quality_poor': 'Speak closer to the microphone in a quiet environment.',
+        'nan_embeddings': 'Try recording again with stable audio.',
+        'all_scores_zero': 'Speak more clearly and at a moderate pace.',
+    }
     
-    scores = []
+    return {
+        'status': 'unscorable',
+        'reason': reason,
+        'phonemes': phonemes,
+        'scores': None,
+        'message': messages.get(reason, 'Could not accurately score this attempt.'),
+        'suggestion': suggestions.get(reason, 'Please speak more clearly and try again.')
+    }
+
+
+# Legacy function - kept for backward compatibility but deprecated
+def generate_adaptive_scores(phonemes: List[str], timestamps: List[dict] = None) -> dict:
+    """
+    DEPRECATED: This function generated FAKE scores which hid real failures.
     
-    for i, phoneme in enumerate(phonemes):
-        base_phoneme = phoneme.upper().rstrip('0123456789')  # Remove stress markers
-        
-        # Get base score from difficulty maps (deterministic)
-        if base_phoneme in difficult_phonemes:
-            base_score = difficult_phonemes[base_phoneme]
-        elif base_phoneme in medium_phonemes:
-            base_score = medium_phonemes[base_phoneme]
-        else:
-            base_score = easy_base
-        
-        # Add deterministic position-based variance
-        # Using a hash of the phoneme and position for consistent variance
-        position_factor = (i % 5) * 0.02 - 0.04  # Range: -0.04 to +0.04
-        phoneme_hash = sum(ord(c) for c in phoneme) % 7 * 0.01 - 0.03  # Range: -0.03 to +0.03
-        
-        score = max(0.3, min(1.0, base_score + position_factor + phoneme_hash))
-        
-        score_entry = {
-            'phoneme': phoneme,
-            'score': round(float(score), 3),
-            'is_weak': bool(score < threshold),
-        }
-        
-        if timestamps and i < len(timestamps):
-            ts = timestamps[i]
-            score_entry['start'] = ts.get('start')
-            score_entry['end'] = ts.get('end')
-            score_entry['word'] = ts.get('word', '')
-            score_entry['position'] = ts.get('position', 'medial')
-        else:
-            score_entry['start'] = i * 0.12
-            score_entry['end'] = (i + 1) * 0.12
-        
-        scores.append(score_entry)
+    Use generate_unscorable_result() instead to be honest about failures.
     
-    return scores
+    This is now a wrapper that returns an unscorable result.
+    """
+    logger.warning(
+        "generate_adaptive_scores is DEPRECATED! "
+        "Do not use fake scores - return unscorable result instead."
+    )
+    return generate_unscorable_result(phonemes, "adaptive_fallback_deprecated")
 
 
 def calculate_cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:

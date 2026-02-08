@@ -43,6 +43,21 @@ export default function LandingPage() {
         return () => clearTimeout(timer);
     }, []);
 
+    // Handle hash scroll when navigating from other pages
+    useEffect(() => {
+        if (shouldLoadBelow && window.location.hash) {
+            const targetId = window.location.hash.replace('#', '');
+            // Small delay to ensure component is rendered
+            const scrollTimer = setTimeout(() => {
+                const element = document.getElementById(targetId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+            return () => clearTimeout(scrollTimer);
+        }
+    }, [shouldLoadBelow]);
+
     return (
         <AnimatePresence>
             <motion.div

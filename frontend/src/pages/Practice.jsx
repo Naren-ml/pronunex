@@ -35,6 +35,7 @@ import { DifficultyBadge, MetricCard, RecommendationCard, ConfidenceMeter } from
 import { InsightsPanel } from '../components/practice/insights/InsightsPanel';
 import { ComparisonVisualizer } from '../components/practice/insights/ComparisonVisualizer';
 import { AIRecommendations } from '../components/practice/insights/AIRecommendations';
+import { MistakePanel, ContentMismatchError, UnscorableError } from '../components/practice/MistakePanel';
 import './Practice.css';
 
 // Waveform Visualizer Component
@@ -233,6 +234,7 @@ export function Practice() {
     const [duration, setDuration] = useState(0);
     const [audioStream, setAudioStream] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [assessmentError, setAssessmentError] = useState(null); // For content_mismatch/unscorable errors
 
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
@@ -426,14 +428,48 @@ export function Practice() {
     const handleSubmit = async () => {
         if (!currentSentence || !audioBlob) return;
 
+        // Clear previous errors
+        setAssessmentError(null);
+
         try {
             const result = await mutate(async () => {
                 return api.uploadAudio(currentSentence.id, audioBlob);
             });
 
-            setAssessment(result.data);
+            const data = result.data;
+
+            // Check for error responses from the new NLP pipeline
+            if (data.error === 'content_mismatch') {
+                // User said something completely different
+                setAssessmentError({
+                    type: 'content_mismatch',
+                    message: data.message,
+                    transcribed: data.transcribed,
+                    expected: data.expected || currentSentence.text,
+                    similarity: data.similarity,
+                    suggestion: data.suggestion
+                });
+                toast.error('Speech content mismatch detected');
+                return;
+            }
+
+            if (data.error === 'unscorable') {
+                // Technical issue with audio processing
+                setAssessmentError({
+                    type: 'unscorable',
+                    message: data.message,
+                    reason: data.reason,
+                    suggestion: data.suggestion
+                });
+                toast.error('Could not analyze audio');
+                return;
+            }
+
+            // Success - set assessment data
+            setAssessment(data);
             toast.success('Assessment complete!');
         } catch (err) {
+            // Network or server error
             toast.error('Failed to assess pronunciation. Please try again.');
         }
     };
@@ -443,6 +479,7 @@ export function Practice() {
         if (currentIndex < (sentences?.length || 0) - 1) {
             setCurrentIndex(prev => prev + 1);
             setAssessment(null);
+            setAssessmentError(null);
             cancelRecording();
         }
     };
@@ -451,12 +488,14 @@ export function Practice() {
         if (currentIndex > 0) {
             setCurrentIndex(prev => prev - 1);
             setAssessment(null);
+            setAssessmentError(null);
             cancelRecording();
         }
     };
 
     const handleTryAgain = () => {
         setAssessment(null);
+        setAssessmentError(null);
         cancelRecording();
     };
 
@@ -468,6 +507,7 @@ export function Practice() {
         // Reset all state
         setCurrentIndex(0);
         setAssessment(null);
+        setAssessmentError(null);
         cancelRecording();
 
         // Create new session
@@ -785,6 +825,22 @@ export function Practice() {
                         </div>
                     )}
 
+                    {/* Content Mismatch Error - User said wrong sentence */}
+                    {assessmentError?.type === 'content_mismatch' && (
+                        <ContentMismatchError
+                            error={assessmentError}
+                            onRetry={handleTryAgain}
+                        />
+                    )}
+
+                    {/* Unscorable Error - Technical issue */}
+                    {assessmentError?.type === 'unscorable' && (
+                        <UnscorableError
+                            error={assessmentError}
+                            onRetry={handleTryAgain}
+                        />
+                    )}
+
                     {/* Assessment Results */}
                     {assessment && (
                         <div className="practice__results-panel">
@@ -824,15 +880,8 @@ export function Practice() {
                                 phonemeScores={assessment.phoneme_scores}
                             />
 
-                            {/* Feedback */}
-                            {(assessment.llm_feedback?.summary || assessment.feedback) && (
-                                <div className="practice__feedback">
-                                    <h4>Feedback</h4>
-                                    <p>{assessment.llm_feedback?.summary || assessment.feedback}</p>
-                                </div>
-                            )}
 
-                            {/* Weak Phonemes */}
+                            {/* Weak Phonemes - Focus Areas */}
                             {assessment.weak_phonemes?.length > 0 && (
                                 <div className="practice__weak-phonemes">
                                     <h4>Focus Areas</h4>
